@@ -50,7 +50,7 @@
 
 Eg.1
 
-    1 #define PI 3.14<p>
+    1 #define PI 3.14
 
     double getCircleArea(double radius)
     4 {
