@@ -48,7 +48,7 @@ typedef unsigned long long u64;
 
 #ifndef _INC_STDLIB
 
-extern void* memcpy(void* des ,void src,u64 size);
+extern void* memcpy(void* des ,void* src,u64 size);
 extern void* malloc(u64 size);
 extern void free(void* p);
 
@@ -56,7 +56,7 @@ extern void free(void* p);
 
 #ifndef _INC_STRING
 
-void* memset(void des,int v,u64 size);
+void* memset(void* des,int v,u64 size);
 
 #endif      //如果没有include string.h 文件 那么需要实现以上几个函数
 
@@ -77,7 +77,7 @@ void* memset(void des,int v,u64 size);
     void (* insert)(struct __##TypeName##_t * v,u32 index,const XX value);\
     void (* sort)(struct __##TypeName##_t * v);\
     void (* show)(struct __##TypeName##_t * v);\
-    void (* compare)(const XX * v1,const XX * v2);\
+    u8   (* compare)(const XX * v1,const XX * v2);\
     void (* toString)(const XX * value);\
     void (* deleteSub)(const XX value);\
 } VCT_##TypeName;
@@ -274,15 +274,68 @@ void* memset(void des,int v,u64 size);
  * .
 */
 #define V_SORT(T,TypeName) \
-    inline void __VCT_sortVCT_##TypeName(VCT_##TypeName* v)\
-{\
-    if(v == NULL || v->compare == NULL)\
-    return ;\
-    else \
+    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v)\
     {\
-    }\
-    return ;\
-}
+        if(v == NULL || v->compare == NULL)    return ;\
+        u32 *mapTab = (u32 *)malloc(sizeof(u32) * (v->size + 1));\
+        u32 index = 0;\
+        for (u32 i = 1; i <= v->size; i++)\
+        {\
+            index = i;\
+            for (; index > 1 && v->compare(&v->data[i - 1], &v->data[mapTab[(index >> 1)]]); index >>= 1)\
+                mapTab[index] = mapTab[index >> 1];\
+            mapTab[index] = i - 1;\
+        }\
+        u32 child = 0;\
+        u32 minindex;\
+        for (u32 i = 0; i < v->size; i++)\
+        {\
+            minindex = mapTab[1];\
+            mapTab[1] = mapTab[v->size - i];\
+            index = 1;\
+            for (; (index << 1) <= (v->size - i - 1); index = child)\
+            {\
+                child = (index << 1);\
+                if (child != (v->size - i - 1) && v->compare(&v->data[mapTab[child + 1]], &v->data[mapTab[child]]))\
+                {\
+                    child++;\
+                }\
+                if (v->compare(&v->data[mapTab[child]], &v->data[mapTab[v->size - i]]))\
+                    mapTab[index] = mapTab[child];\
+                else\
+                    break;\
+            }\
+            mapTab[index] = mapTab[v->size - i];\
+            mapTab[v->size - i] = minindex;\
+        }\
+        u8 *sta = (u8 *)malloc(sizeof(u8) * v->size);\
+        u32 cnt = 0;\
+        T t = {0};\
+        u32 start = 0;\
+        u32 next = 0;\
+        memset(sta, 0, sizeof(u8) * v->size);\
+        for (u32 i = v->size; i > 0 && cnt != v->size; i--)\
+        {\
+            if (sta[v->size - i] == 1)\
+                continue;\
+            t = v->data[v->size - i];\
+            start = v->size - i;\
+            next = mapTab[i];\
+            while (next != (v->size - i))\
+            {\
+                v->data[start] = v->data[next];\
+                sta[start] = 1;cnt++;\
+                start = next;\
+                next = mapTab[v->size - next];\
+            }\
+            v->data[start] = t;\
+            sta[start] = 1;cnt++;\
+        }\
+    free(mapTab);\
+    free(sta);\
+    }
+
+
 
 #define V_SHOW(TypeName) \
     inline void __VCT_showVCT_##TypeName(VCT_##TypeName* v) \
@@ -297,6 +350,7 @@ void* memset(void des,int v,u64 size);
 }\
 
 
+
 //-----------------vector 外部调用 宏定义区域------------//
 
 ///< 此宏定义使用在头文件,一定要和 V_Declare_Vector 成对使用,一个在头文件一个在.c文件
@@ -307,6 +361,7 @@ void* memset(void des,int v,u64 size);
     V_TYPEDEF(T,TypeName) \
     extern VCT_##TypeName* VCT_newVCT_##TypeName(void);\
     extern void VCT_deleteVCT_##TypeName(VCT_##TypeName* v);\
+    //
 
 
 #define V_Declare_Vector(T,TypeName) \
@@ -331,7 +386,8 @@ void* memset(void des,int v,u64 size);
     V_REMOVE(TypeName) \
     V_INSERT(T,TypeName) \
     V_SORT(T,TypeName) \
-    V_SHOW(TypeName)
+    V_SHOW(TypeName)\
+    //
 
 V_Define(int,int_t)
 
