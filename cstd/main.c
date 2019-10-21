@@ -1,13 +1,12 @@
-#include <stdio.h>
 #include "../cvector.h"
+#include <stdio.h>
 #include <sys/time.h>
 typedef unsigned int template_t;
 
 V_Define(template_t, DOU_t)
-
 V_Declare_Vector(template_t, DOU_t)
 
-void heapSortInt(VCT_DOU_t *v);
+        void heapSortInt(VCT_DOU_t *v);
 
 u8 compare(const template_t *a, const template_t *b)
 {
@@ -19,72 +18,207 @@ void douToStr(const template_t *s)
     //printf("%0.12f ", s->data);
 }
 
-V_Define(unsigned int,uint_t)
-V_Declare_Vector(unsigned int,uint_t)
+V_Define(unsigned int, uint_t)
+    V_Declare_Vector(unsigned int, uint_t)
 
-void heapSort(VCT_uint_t *v);
+        void heapSort(VCT_uint_t *v);
 
-u8 compaleuint(const unsigned int * a,const unsigned int * b)
+u8 compaleuint(const unsigned int *a, const unsigned int *b)
 {
-    return  *a<*b;
+    return *a > *b;
 }
-void toStr(const unsigned int * a)
+void toStr(const unsigned int *a)
 {
-    printf("\t%5d",*a);
+    printf("\t%5d", *a);
 }
+
+//bubble sort
+void bubol(VCT_uint_t *v)
+{
+    template_t temp;
+    u32 i, j;
+    for (i = 0; i < (v->size - 1); i++) /* 外循环为排序趟数，len个数进行len-1趟 */
+        for (j = 0; j < (v->size - 1 - i); j++)
+        { /* 内循环为每趟比较的次数，第i趟比较len-i次 */
+            if (v->data[j] > v->data[j + 1])
+            { /* 相邻元素比较，若逆序则交换（升序为左大于右，降序反之） */
+                temp = v->data[j];
+                v->data[j] = v->data[j + 1];
+                v->data[j + 1] = temp;
+            }
+        }
+}
+
+void quicksort(template_t *a, unsigned int n)
+{
+    unsigned int i, j;
+    u32 index = (u32)rand() % n;
+    template_t pivot = a[0]; //设置基准值
+    a[0] = a[index];
+    a[index] = pivot;
+    pivot = a[0];
+    i = 0;
+    j = n - 1;
+    while (i < j)
+    {
+        //大于基准值者保持在原位置
+        while (i < j && a[j] > pivot)
+        {
+            j--;
+        }
+        if (i < j)
+        {
+            a[i] = a[j];
+            i++;
+        }
+        //不大于基准值者保持在原位置
+        while (i < j && a[i] <= pivot)
+        {
+            i++;
+        }
+        if (i < j)
+        {
+            a[j] = a[i];
+            j--;
+        }
+    }
+    a[i] = pivot; //基准元素归位
+    if (i > 1)
+    {
+        //递归地对左子序列 进行快速排序
+        quicksort(a, i);
+    }
+    if (n - i - 1 > 1)
+    {
+        quicksort(a + i + 1, n - i - 1);
+    }
+}
+
+void quickSubSort(template_t *data, u32 left, u32 right, u32 base)
+{
+    template_t temp = data[base];
+    data[base] = data[left];
+    data[left] = temp;
+
+    u32 low = left;
+    u32 hight = right;
+    while (low < hight)
+    {
+        while (low < hight && compaleuint(&temp, data + hight))
+            hight--;
+        if (low < hight)
+        {
+            data[low] = data[hight];
+            low++;
+        }
+        while (low < hight && compaleuint(data + low, &temp))
+        {
+            low++;
+        }
+        if (low < hight)
+        {
+            data[hight] = data[low];
+            hight--;
+        }
+    }
+    data[hight] = temp;
+
+    if (left < (hight - 1))
+        quickSubSort(data, left, hight - 1, left); //(hight-1-left)/2
+    if ((hight + 1) > right)
+        quickSubSort(data, hight + 1, right, hight + 1); //(left-hight-1)/2
+}
+
+void quickSort(VCT_uint_t *v)
+{
+    quicksort(v->data, v->size);
+}
+
 int main()
 {
 
-    VCT_uint_t* test =  VCT_newVCT_uint_t();
+    VCT_uint_t *test = VCT_newVCT_uint_t();
     test->compare = compaleuint;
     test->toString = toStr;
     struct timeval start, end;
 
-    for(int i = 0;i<5000000;i++)
+    int number = 200;
+
+    for (int i = 0; i < number; i++)
     {
-        test->append(test,rand()&0xFFFFFFFFF);
+        test->append(test, rand() & 0xFFFFFFFFF);
     }
 
-
     printf("start heap :\n");
-    gettimeofday( &start, NULL );
+    gettimeofday(&start, NULL);
     heapSort(test);
-    gettimeofday( &end, NULL );
-    int timeuse = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    gettimeofday(&end, NULL);
+    int timeuse = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
 
     printf("over:time: %d us\n", timeuse);
-//    test->clear(test);
+    test->clear(test);
 
-//    for(int i = 0;i<5000000;i++)
-//    {
-//        test->append(test,rand()&0xFFFFFFFFF);
-//    }
+    for (int i = 0; i < number; i++)
+    {
+        test->append(test, rand() & 0xFFFFFFFFF);
+    }
     printf("start heap int :\n");
-    gettimeofday( &start, NULL );
+    gettimeofday(&start, NULL);
     test->sort(test);
-    gettimeofday( &end, NULL );
+    gettimeofday(&end, NULL);
 
-    timeuse = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+    timeuse = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
+test->show(test);
+    printf("over:time: %d us\n", timeuse);
+    //--------------------------------------------
+    //    test->clear(test);
+
+    //    for(int i = 0;i<number;i++)
+    //    {
+    //        test->append(test,rand()&0xFFFFFFFFF);
+    //    }
+    //    printf("start bubel :\n");
+    //    gettimeofday( &start, NULL );
+    //    bubol(test);
+    //    gettimeofday( &end, NULL );
+
+    //    timeuse = 1000000 * ( end.tv_sec - start.tv_sec ) + end.tv_usec - start.tv_usec;
+
+    //    printf("over:time: %d us\n", timeuse);
+    //-----------------------------------------------
+    test->clear(test);
+    for (int i = 0; i < number; i++)
+    {
+        //        test->append(test,rand()&0xFFFFFFFFF);
+        test->append(test, (u32)i);
+    }
+    printf("start quick :\n");
+    gettimeofday(&start, NULL);
+    quickSort(test);
+    //    quickSubSort(d,0,19,0);
+    gettimeofday(&end, NULL);
+
+    timeuse = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
 
     printf("over:time: %d us\n", timeuse);
+    //    test->show(test);
 
+    //    printf("Hello World!\n");
+    //    VCT_DOU_t *v = VCT_newVCT_DOU_t();
+    //    v->toString = douToStr;
+    //    for(int i = 0;i<35;i++)
+    //    {
+    //        template_t temp;
+    //        temp.data = rand()/(rand()+0.1);
+    //        v->append(v, temp);
+    //    }
+    //    v->show(v);
 
-//    printf("Hello World!\n");
-//    VCT_DOU_t *v = VCT_newVCT_DOU_t();
-//    v->toString = douToStr;
-//    for(int i = 0;i<35;i++)
-//    {
-//        template_t temp;
-//        temp.data = rand()/(rand()+0.1);
-//        v->append(v, temp);
-//    }
-//    v->show(v);
+    //    v->compare = compare;
 
-//    v->compare = compare;
+    //    heapSortInt(v);
 
-//    heapSortInt(v);
-
-//    //    heapSort(v);
+    //    //    heapSort(v);
 
     return 0;
 }
@@ -94,7 +228,7 @@ int main()
  * 此函数为堆排序的改进版本，使用了一个数组作为数据的映射，使用此数组记住当前位置正确的数据下标是多少；
  * 例如 数组a[0] = 12;即表示 在真正有序的数据中第 [0] 位应该是现在的第12位数据；但是在这里为了节约空间，
  * 将数据的顺序颠倒；也就是说 a[maxsize] 中存放的数字下标就是有序数据的第[0]位；
- * 
+ *
  * insert delete后，生成的数组就是我们的映射表，这个是依照迭代的思想，从第0位开始，找出第0位应该存放的数据是第n位，
  * 迭代，需要应该在第n位的数据现在在第y位。依次寻找迭代；
  * 由此一定会迭代出一个循环，此时将之前缓存起来的第0位数据放入它应该去的位置，同时，自增，查看第1位，如果第1位已经就绪则继续自增
@@ -213,5 +347,5 @@ void heapSort(VCT_uint_t *v)
         temp[index] = temp[v->size - i];
     }
     free(temp);
-//    v->show(v);
+    //    v->show(v);
 }
