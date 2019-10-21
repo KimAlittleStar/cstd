@@ -50,6 +50,7 @@ typedef unsigned long long u64;
 extern void *memcpy(void *des, void *src, u64 size);
 extern void *malloc(u64 size);
 extern void free(void *p);
+extern int rand(void);
 
 #endif //如果没有include stdlib.h 文件 那么需要实现以上几个函数
 
@@ -60,25 +61,26 @@ void *memset(void *des, int v, u64 size);
 #endif //如果没有include string.h 文件 那么需要实现以上几个函数
 
 //----------------vector 自定义结构体实现----------------//
-#define V_TYPEDEF(XX, TypeName)                                                 \
-    typedef struct __##TypeName##_t                                             \
-    {                                                                           \
-        XX *data;                                                               \
-        u32 size;                                                               \
-        u32 realsize;                                                           \
-        u8 (*reSize)(struct __##TypeName##_t * v, u32 newsize);                 \
-        u32 (*getSize)(struct __##TypeName##_t * v);                            \
-        XX *(*at)(struct __##TypeName##_t * v, u32 index);                      \
-        u8 (*append)(struct __##TypeName##_t * v, const XX d);                  \
-        void (*clear)(struct __##TypeName##_t * v);                             \
-        void (*removeLast)(struct __##TypeName##_t * v);                        \
-        void (*remove)(struct __##TypeName##_t * v, u32 starX, u32 lengh);      \
-        void (*insert)(struct __##TypeName##_t * v, u32 index, const XX value); \
-        void (*sort)(struct __##TypeName##_t * v);                              \
-        void (*show)(struct __##TypeName##_t * v);                              \
-        u8 (*compare)(const XX *v1, const XX *v2);                              \
-        void (*toString)(const XX *value);                                      \
-        void (*deleteSub)(const XX value);                                      \
+#define V_TYPEDEF(XX, TypeName)                                                               \
+    typedef struct __##TypeName##_t                                                           \
+    {                                                                                         \
+        XX *data;                                                                             \
+        u32 size;                                                                             \
+        u32 realsize;                                                                         \
+        u8 (*reSize)(struct __##TypeName##_t * v, u32 newsize);                               \
+        u32 (*getSize)(struct __##TypeName##_t * v);                                          \
+        XX *(*at)(struct __##TypeName##_t * v, u32 index);                                    \
+        u8 (*append)(struct __##TypeName##_t * v, const XX d);                                \
+        void (*clear)(struct __##TypeName##_t * v);                                           \
+        void (*removeLast)(struct __##TypeName##_t * v);                                      \
+        void (*remove)(struct __##TypeName##_t * v, u32 starX, u32 lengh);                    \
+        void (*insert)(struct __##TypeName##_t * v, u32 index, const XX value);               \
+        void (*sort)(struct __##TypeName##_t * v);                                            \
+        void (*show)(struct __##TypeName##_t * v);                                            \
+        void (*replace)(struct __##TypeName##_t * v, XX *des, u32 len_d, XX *src, u32 len_s); \
+        u8 (*compare)(const XX *v1, const XX *v2);                                            \
+        void (*toString)(const XX *value);                                                    \
+        void (*deleteSub)(const XX value);                                                    \
     } VCT_##TypeName;
 
 //V_TYPEDEF(int,Vint)
@@ -107,6 +109,7 @@ void *memset(void *des, int v, u64 size);
         ret->insert = __VCT_insertVCT_##TypeName;             \
         ret->sort = __VCT_sortVCT_##TypeName;                 \
         ret->show = __VCT_showVCT_##TypeName;                 \
+        ret->replace = __VCT_replaceVCT_##TypeName;           \
         ret->compare = COMPARE;                               \
         ret->toString = TOSTR;                                \
         ret->deleteSub = DELSUB;                              \
@@ -336,7 +339,7 @@ void *memset(void *des, int v, u64 size);
         j = n - 1;                                                 \
         while (i < j)                                              \
         {                                                          \
-            while (i < j && v->compare(&pivot, a + j))              \
+            while (i < j && v->compare(&pivot, a + j))             \
             {                                                      \
                 j--;                                               \
             }                                                      \
@@ -345,7 +348,7 @@ void *memset(void *des, int v, u64 size);
                 a[i] = a[j];                                       \
                 i++;                                               \
             }                                                      \
-            while (i < j && v->compare(a + i, &pivot))              \
+            while (i < j && v->compare(a + i, &pivot))             \
             {                                                      \
                 i++;                                               \
             }                                                      \
@@ -408,6 +411,48 @@ void *memset(void *des, int v, u64 size);
         }                                                                                   \
     }
 
+#define V_REPLACE(T, TypeName)                                                                          \
+    inline void __VCT_replaceVCT_##TypeName(VCT_##TypeName *v, T *des, u32 len_d, T *src, u32 len_s)    \
+    {                                                                                                   \
+        if (v == NULL || des == NULL || v->compare == NULL || len_d > v->size)                          \
+            return;                                                                                     \
+        u8 match_status = 1;                                                                            \
+        for (u32 i = 0; i < (v->size - len_d); i++)                                                     \
+        {                                                                                               \
+            match_status = 1; /*/置位默认为匹配成功*/                                          \
+            for (u32 j = 0; j < len_d; j++)                                                             \
+            {                                                                                           \
+                if (v->compare(v->data + j + i, des + j) != v->compare(des + j, v->data + j + i))       \
+                {                                                                                       \
+                    match_status = 0;                                                                   \
+                    break;                                                                              \
+                }                                                                                       \
+            } /*/如果匹配字符成功 那么match_status == 1;*/                                    \
+            if (match_status == 1)                                                                      \
+            { /*/匹配字符成功开始替换*/                                                       \
+                if (len_s > len_d && v->realsize - v->size < (len_s - len_d))                           \
+                {                                                                                       \
+                    v->reSize(v, v->realsize * 3 / 2 + len_s);                                          \
+                }                                                                                       \
+                if (len_s > len_d)                                                                      \
+                { /*向后移动覆盖*/                                                                \
+                    for (u32 j = v->size - 1; j >= i + len_d; j--)                                      \
+                        v->data[j + len_s - len_d] = v->data[j];                                        \
+                }                                                                                       \
+                else if (len_d > len_s)                                                                 \
+                { /*向前移动覆盖*/                                                                \
+                    for (u32 j = i + len_s; (j - len_s + len_d) < v->size; j++)                         \
+                        v->data[j] = v->data[j - len_s + len_d];                                        \
+                    memset(v->data + v->size - len_d + len_s, 0, sizeof(v->data[0]) * (len_d - len_s)); \
+                }                                                                                       \
+                for (u32 j = 0; j < len_s; j++)                                                         \
+                    v->data[i + j] = src[j];                                                            \
+                v->size = v->size + len_s - len_d;                                                      \
+                i += len_s;                                                                             \
+            }                                                                                           \
+        }                                                                                               \
+    }
+
 //-----------------vector 外部调用 宏定义区域------------//
 
 ///< 此宏定义使用在头文件,一定要和 V_Declare_Vector 成对使用,一个在头文件一个在.c文件
@@ -419,30 +464,33 @@ void *memset(void *des, int v, u64 size);
     extern void VCT_deleteVCT_##TypeName(VCT_##TypeName *v); \
     //
 
-#define V_Declare_Vector(T, TypeName)                                             \
-    u8 __VCT_resizeVCT_##TypeName(VCT_##TypeName *v, u32 newsize);                \
-    u32 __VCT_sizeVCT_##TypeName(VCT_##TypeName *v);                              \
-    T *__VCT_atVCT_##TypeName(VCT_##TypeName *v, u32 index);                      \
-    u8 __VCT_appendVCT_##TypeName(VCT_##TypeName *v, const T d);                  \
-    void __VCT_clearVCT_##TypeName(VCT_##TypeName *v);                            \
-    void __VCT_removelastVCT_##TypeName(VCT_##TypeName *v);                       \
-    void __VCT_removeVCT_##TypeName(VCT_##TypeName *v, u32 starX, u32 lengh);     \
-    void __VCT_insertVCT_##TypeName(VCT_##TypeName *v, u32 index, const T value); \
-    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v);                             \
-    void __VCT_showVCT_##TypeName(VCT_##TypeName *v);                             \
-    V_NEW(TypeName, NULL, NULL, NULL)                                             \
-    V_DELETE(TypeName)                                                            \
-    V_RESIZE(T, TypeName)                                                         \
-    V_SIZE(TypeName)                                                              \
-    V_AT(T, TypeName)                                                             \
-    V_APPEND(T, TypeName)                                                         \
-    V_CLEAR(TypeName)                                                             \
-    V_REMOVELAST(TypeName)                                                        \
-    V_REMOVE(TypeName)                                                            \
-    V_INSERT(T, TypeName)                                                         \
-    V_SORT(T, TypeName)                                                           \
-    V_SHOW(TypeName)                                                              \
-    //
+#define V_Declare_Vector(T, TypeName)                                                          \
+    u8 __VCT_resizeVCT_##TypeName(VCT_##TypeName *v, u32 newsize);                             \
+    u32 __VCT_sizeVCT_##TypeName(VCT_##TypeName *v);                                           \
+    T *__VCT_atVCT_##TypeName(VCT_##TypeName *v, u32 index);                                   \
+    u8 __VCT_appendVCT_##TypeName(VCT_##TypeName *v, const T d);                               \
+    void __VCT_clearVCT_##TypeName(VCT_##TypeName *v);                                         \
+    void __VCT_removelastVCT_##TypeName(VCT_##TypeName *v);                                    \
+    void __VCT_removeVCT_##TypeName(VCT_##TypeName *v, u32 starX, u32 lengh);                  \
+    void __VCT_insertVCT_##TypeName(VCT_##TypeName *v, u32 index, const T value);              \
+    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v);                                          \
+    void __VCT_showVCT_##TypeName(VCT_##TypeName *v);                                          \
+    void __VCT_replaceVCT_##TypeName(VCT_##TypeName *v, T *des, u32 len_d, T *src, u32 len_s); \
+    V_NEW(TypeName, NULL, NULL, NULL)                                                          \
+    V_DELETE(TypeName)                                                                         \
+    V_RESIZE(T, TypeName)                                                                      \
+    V_SIZE(TypeName)                                                                           \
+    V_AT(T, TypeName)                                                                          \
+    V_APPEND(T, TypeName)                                                                      \
+    V_CLEAR(TypeName)                                                                          \
+    V_REMOVELAST(TypeName)                                                                     \
+    V_REMOVE(TypeName)                                                                         \
+    V_INSERT(T, TypeName)                                                                      \
+    V_SORT(T, TypeName)                                                                        \
+    V_SHOW(TypeName)                                                                           \
+    V_REPLACE(T, TypeName)
+
+//
 
 V_Define(int, int_t)
 

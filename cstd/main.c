@@ -1,33 +1,40 @@
 #include "../cvector.h"
 #include <stdio.h>
 #include <sys/time.h>
-typedef unsigned int template_t;
+typedef char template_t;
 
 V_Define(template_t, DOU_t)
+//
 V_Declare_Vector(template_t, DOU_t)
 
-        void heapSortInt(VCT_DOU_t *v);
 
-u8 compare(const template_t *a, const template_t *b)
+
+V_Define(template_t, uint_t)
+//
+V_Declare_Vector(template_t, uint_t)
+
+void heapSort(VCT_uint_t *v);
+void heapSortInt(VCT_DOU_t *v);
+void replace_demo(VCT_uint_t* v,template_t* des,u32 len_d,template_t* src,u32 len_s);
+int main_testForSort(void);
+int main_testForReplace(void);
+
+int main(void)
 {
-    //return (a->data > b->data);
+    main_testForReplace();
+    return 0;
 }
 
-void douToStr(const template_t *s)
-{
-    //printf("%0.12f ", s->data);
-}
 
-V_Define(unsigned int, uint_t)
-    V_Declare_Vector(unsigned int, uint_t)
-
-        void heapSort(VCT_uint_t *v);
-
-u8 compaleuint(const unsigned int *a, const unsigned int *b)
+u8 compaleuint(const template_t *a, const template_t *b)
 {
     return *a > *b;
 }
-void toStr(const unsigned int *a)
+u8 compare(const template_t* a,const template_t* b)
+{
+    return *a<*b;
+}
+void toStr(const template_t *a)
 {
     printf("\t%5d", *a);
 }
@@ -94,47 +101,12 @@ void quicksort(template_t *a, unsigned int n)
     }
 }
 
-void quickSubSort(template_t *data, u32 left, u32 right, u32 base)
-{
-    template_t temp = data[base];
-    data[base] = data[left];
-    data[left] = temp;
-
-    u32 low = left;
-    u32 hight = right;
-    while (low < hight)
-    {
-        while (low < hight && compaleuint(&temp, data + hight))
-            hight--;
-        if (low < hight)
-        {
-            data[low] = data[hight];
-            low++;
-        }
-        while (low < hight && compaleuint(data + low, &temp))
-        {
-            low++;
-        }
-        if (low < hight)
-        {
-            data[hight] = data[low];
-            hight--;
-        }
-    }
-    data[hight] = temp;
-
-    if (left < (hight - 1))
-        quickSubSort(data, left, hight - 1, left); //(hight-1-left)/2
-    if ((hight + 1) > right)
-        quickSubSort(data, hight + 1, right, hight + 1); //(left-hight-1)/2
-}
-
 void quickSort(VCT_uint_t *v)
 {
     quicksort(v->data, v->size);
 }
 
-int main()
+int main_testForSort(void)
 {
 
     VCT_uint_t *test = VCT_newVCT_uint_t();
@@ -142,13 +114,12 @@ int main()
     test->toString = toStr;
     struct timeval start, end;
 
-    int number = 200;
+    int number = 100;
 
     for (int i = 0; i < number; i++)
     {
-        test->append(test, rand() & 0xFFFFFFFFF);
+        test->append(test, (template_t)rand());
     }
-
     printf("start heap :\n");
     gettimeofday(&start, NULL);
     heapSort(test);
@@ -160,15 +131,16 @@ int main()
 
     for (int i = 0; i < number; i++)
     {
-        test->append(test, rand() & 0xFFFFFFFFF);
+        test->append(test, (template_t)rand());
     }
+    test->show(test);
     printf("start heap int :\n");
     gettimeofday(&start, NULL);
     test->sort(test);
     gettimeofday(&end, NULL);
 
     timeuse = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
-test->show(test);
+    test->show(test);
     printf("over:time: %d us\n", timeuse);
     //--------------------------------------------
     //    test->clear(test);
@@ -190,7 +162,7 @@ test->show(test);
     for (int i = 0; i < number; i++)
     {
         //        test->append(test,rand()&0xFFFFFFFFF);
-        test->append(test, (u32)i);
+        test->append(test, (template_t)i);
     }
     printf("start quick :\n");
     gettimeofday(&start, NULL);
@@ -223,6 +195,29 @@ test->show(test);
     return 0;
 }
 
+int main_testForReplace(void)
+{
+    VCT_uint_t * test = VCT_newVCT_uint_t();
+    template_t des[] = "123";
+    template_t src[] = "";
+    test->compare = compaleuint;
+    test->toString = toStr;
+    for(int i = 0;i<10;i++)
+    {
+        test->append(test,'0'+(template_t)i%4);
+    }
+    test->show(test);
+    printf("\n%s\n",test->data);
+//    replace_demo(test,des,sizeof (des)/sizeof (des[0])-1,src,0);
+    test->replace(test,des,3,src,0);
+    test->show(test);
+    printf("\n%s\n",test->data);
+
+    return 0;
+
+
+}
+
 /*
  *
  * 此函数为堆排序的改进版本，使用了一个数组作为数据的映射，使用此数组记住当前位置正确的数据下标是多少；
@@ -234,7 +229,6 @@ test->show(test);
  * 由此一定会迭代出一个循环，此时将之前缓存起来的第0位数据放入它应该去的位置，同时，自增，查看第1位，如果第1位已经就绪则继续自增
  * 性能分析；
  * 此方法相对于堆排序，将空间缩减为每个元素只占用5个字节，如果元素类型大小小于5，则使用此方法将浪费空间和时间，
- * 时间执行次数将会比普通的堆排序增加 2N 次；
 */
 void heapSortInt(VCT_DOU_t *v)
 {
@@ -348,4 +342,52 @@ void heapSort(VCT_uint_t *v)
     }
     free(temp);
     //    v->show(v);
+}
+
+
+void replace_demo(VCT_uint_t* v,template_t* des,u32 len_d,template_t* src,u32 len_s)
+{
+    if(v== NULL || v->compare == NULL || len_d>v->size)  return;
+    u8 match_status = 1;
+    for(u32 i = 0;i<(v->size-len_d );i++)
+    {
+        match_status = 1;                   //置位默认为匹配成功
+        for(u32 j = 0;j < len_d;j++)
+        {
+            if(v->compare(v->data+j+i,des+j) != v->compare(des+j,v->data+j+i))
+            {
+                match_status = 0;
+                break;
+            }
+        }//如果匹配字符成功 那么match_status == 1;
+        if(match_status == 1)
+        {//匹配字符成功开始替换
+            if(len_s > len_d && v->realsize - v->size < (len_s - len_d))
+            {
+                v->reSize(v,v->realsize*3/2+len_s);
+            }
+            if(len_s > len_d)   //插入大于原生；向后移动
+            {
+                for(u32 j = v->size-1;j>=i+len_d;j--)
+                    v->data[j+len_s-len_d] = v->data[j];
+            }else if(len_d > len_s)
+            {//向前移动
+                for(u32 j = i+len_s;(j-len_s+len_d)<v->size;j++)
+                    v->data[j] = v->data[j-len_s+len_d];
+                memset(v->data+v->size-len_d+len_s,0,sizeof(v->data[0]) * (len_d- len_s));
+            }
+            for(u32 j = 0;j<len_s;j++)
+                v->data[i+j] = src[j];
+            v->size = v->size + len_s-len_d;
+            i+=len_s;
+//            else
+//            {//相等不需要移动
+
+//            }
+        }
+    }
+
+
+
+
 }
