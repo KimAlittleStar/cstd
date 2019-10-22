@@ -411,46 +411,41 @@ void *memset(void *des, int v, u64 size);
         }                                                                                   \
     }
 
-#define V_REPLACE(T, TypeName)                                                                          \
-    inline void __VCT_replaceVCT_##TypeName(VCT_##TypeName *v, T *des, u32 len_d, T *src, u32 len_s)    \
-    {                                                                                                   \
-        if (v == NULL || des == NULL || v->compare == NULL || len_d > v->size)                          \
-            return;                                                                                     \
-        u8 match_status = 1;                                                                            \
-        for (u32 i = 0; i < (v->size - len_d); i++)                                                     \
-        {                                                                                               \
-            match_status = 1; /*/置位默认为匹配成功*/                                          \
-            for (u32 j = 0; j < len_d; j++)                                                             \
-            {                                                                                           \
-                if (v->compare(v->data + j + i, des + j) != v->compare(des + j, v->data + j + i))       \
-                {                                                                                       \
-                    match_status = 0;                                                                   \
-                    break;                                                                              \
-                }                                                                                       \
-            } /*/如果匹配字符成功 那么match_status == 1;*/                                    \
-            if (match_status == 1)                                                                      \
-            { /*/匹配字符成功开始替换*/                                                       \
-                if (len_s > len_d && v->realsize - v->size < (len_s - len_d))                           \
-                {                                                                                       \
-                    v->reSize(v, v->realsize * 3 / 2 + len_s);                                          \
-                }                                                                                       \
-                if (len_s > len_d)                                                                      \
-                { /*向后移动覆盖*/                                                                \
-                    for (u32 j = v->size - 1; j >= i + len_d; j--)                                      \
-                        v->data[j + len_s - len_d] = v->data[j];                                        \
-                }                                                                                       \
-                else if (len_d > len_s)                                                                 \
-                { /*向前移动覆盖*/                                                                \
-                    for (u32 j = i + len_s; (j - len_s + len_d) < v->size; j++)                         \
-                        v->data[j] = v->data[j - len_s + len_d];                                        \
-                    memset(v->data + v->size - len_d + len_s, 0, sizeof(v->data[0]) * (len_d - len_s)); \
-                }                                                                                       \
-                for (u32 j = 0; j < len_s; j++)                                                         \
-                    v->data[i + j] = src[j];                                                            \
-                v->size = v->size + len_s - len_d;                                                      \
-                i += len_s;                                                                             \
-            }                                                                                           \
-        }                                                                                               \
+#define V_REPLACE(T, TypeName)                                                                            \
+    inline void __VCT_replaceVCT_##TypeName(VCT_##TypeName *v, T *des, u32 len_d, T *src, u32 len_s)      \
+    {                                                                                                     \
+        if (v == NULL || des == NULL || v->compare == NULL || len_d > v->size)                            \
+            return;                                                                                       \
+        u8 match_status = 1;                                                                              \
+        for (u32 i = 0; i < (v->size - len_d); i++)                                                       \
+        {                                                                                                 \
+            match_status = 1; /*/置位默认为匹配成功*/                                            \
+            for (u32 j = 0; j < len_d; j++)                                                               \
+            {                                                                                             \
+                if (v->compare(v->data + j + i, des + j) != v->compare(des + j, v->data + j + i))         \
+                {                                                                                         \
+                    match_status = 0;                                                                     \
+                    break;                                                                                \
+                }                                                                                         \
+            } /*/如果匹配字符成功 那么match_status == 1;*/                                      \
+            if (match_status == 1)                                                                        \
+            { /*/匹配字符成功开始替换*/                                                         \
+                for (u32 j = 0; j < len_d && v->deleteSub != NULL; j++)                                   \
+                    v->deleteSub(v->data[i + j]);                                                         \
+                if (len_s > len_d && v->realsize - v->size < (len_s - len_d))                             \
+                {                                                                                         \
+                    v->reSize(v, v->realsize * 3 / 2 + len_s);                                            \
+                }                                                                                         \
+                if (len_d != len_s) /*如果长度不等那么就需要移动内存*/                     \
+                    memcpy(v->data + i + len_s, v->data + i + len_d, v->size - i - len_d);                \
+                if (len_d > len_s) /*如果目标长度比其他的要小那么后面的数据要清空*/ \
+                    memset(v->data + v->size - len_d + len_s, 0, sizeof(v->data[0]) * (len_d - len_s));   \
+                for (u32 j = 0; j < len_s; j++)                                                           \
+                    v->data[i + j] = src[j];                                                              \
+                v->size = v->size + len_s - len_d;                                                        \
+                i += len_s;                                                                               \
+            }                                                                                             \
+        }                                                                                                 \
     }
 
 //-----------------vector 外部调用 宏定义区域------------//
