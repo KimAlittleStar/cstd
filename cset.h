@@ -10,6 +10,8 @@
 #define PRINTF_ENABLE 1
 #endif
 
+#define _Static //临时定义
+
 #if PRINTF_ENABLE == 1
 #define VPRINTF(ftm, ...) printf(ftm, ##__VA_ARGS__)
 #else
@@ -50,6 +52,8 @@ void *memset(void *des, int v, u64 size);
 
 //-----------------------------函数实现区------------------------------//
 
+#define SET_Max(a, b) ((a > b) ? (a) : (b))
+
 /*本set底层数据结构使用 AVL Tree实现,现在处处于开发阶段,首先使用普通代码实现,而后才会使用真正的膨胀代码;*/
 typedef unsigned int typeClass;
 
@@ -65,17 +69,35 @@ typedef struct __SET_typeClass_t
 {
     SET_typeClass_node_t *root;
     u32 size;
+    void (*deleteSub)(const typeClass *ele);
+    u8 (*compare)(const typeClass *a, const typeClass *b);
 } SET_typeClass_t;
 
 SET_typeClass_t *SET_newtypeClass_t(void);
 void SET_deletetypeClass_t(SET_typeClass_t *set);
-void SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass *ele);
-void SET_removetypeClass_t(SET_typeClass_t *set, const typeClass *ele);
+void SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele);
+void SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele);
 u32 SET_getSizetypeClass_t(SET_typeClass_t *set);
-const typeClass *SET_toDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
+typeClass *SET_toDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
 const SET_typeClass_node_t *SET_nexttypeClass_t(const SET_typeClass_node_t *item);
 
 void SET_deletetypeClass_node_t(void (*freesub)(const typeClass *d), SET_typeClass_node_t *node);
 u32 SET_toDatatypeClass_node_t(SET_typeClass_node_t *node, typeClass *array);
+
+_Static SET_typeClass_node_t *SET_doubleRotateLefttypeClass(SET_typeClass_node_t *s);
+_Static SET_typeClass_node_t *SET_doubleRotateRighttypeClass(SET_typeClass_node_t *s);
+_Static SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t *s);
+_Static SET_typeClass_node_t *SET_singleRotateRighttypeClass(SET_typeClass_node_t *s);
+_Static SET_typeClass_node_t *SET_inserttypeClass_node_t(SET_typeClass_node_t *root,
+                                                         u8 (*compare)(const typeClass *a, const typeClass *b),
+                                                         const typeClass *value, u32 *size);
+SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
+                                                 u8 (*compare)(const typeClass *a, const typeClass *b),
+                                                 void (*deleteSub)(const typeClass *ele),
+                                                 const typeClass *value, u32 *size);
+
+typeClass SET_removeMintypeClass_t(SET_typeClass_node_t *s);
+
+u8 SET_heighttypeClass(SET_typeClass_node_t *s);
 
 #endif // _cset.h

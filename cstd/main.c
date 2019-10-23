@@ -17,10 +17,11 @@ void heapSortInt(VCT_DOU_t *v);
 void replace_demo(VCT_uint_t *v, template_t *des, u32 len_d, template_t *src, u32 len_s);
 int main_testForSort(void);
 int main_testForReplace(void);
-
+void cset_test_demo(void);
 int main(void)
 {
-    main_testForReplace();
+    //    main_testForReplace();
+    cset_test_demo();
     return 0;
 }
 
@@ -198,7 +199,7 @@ int main_testForReplace(void)
     char string[50];
     memset(string, 0, 50);
     strcpy(string, "ABCDEFG");
-    memcpy(string+3, string, 7);
+    memcpy(string + 3, string, 7);
     printf("string = %s\n", string);
 
     VCT_uint_t *test = VCT_newVCT_uint_t();
@@ -212,7 +213,7 @@ int main_testForReplace(void)
     }
     test->show(test);
     printf("\n%s\n", test->data);
-//        replace_demo(test,des,sizeof (des)/sizeof (des[0])-1,src,6);
+    //        replace_demo(test,des,sizeof (des)/sizeof (des[0])-1,src,6);
     test->replace(test, des, 3, src, 6);
     test->show(test);
     printf("\n%s\n", test->data);
@@ -364,27 +365,27 @@ void replace_demo(VCT_uint_t *v, template_t *des, u32 len_d, template_t *src, u3
         } //如果匹配字符成功 那么match_status == 1;
         if (match_status == 1)
         { //匹配字符成功开始替换
-            for(u32 j = 0;j<len_d && v->deleteSub != NULL;j++)
-                v->deleteSub(v->data[i+j]);
+            for (u32 j = 0; j < len_d && v->deleteSub != NULL; j++)
+                v->deleteSub(v->data[i + j]);
             if (len_s > len_d && v->realsize - v->size < (len_s - len_d))
             {
                 v->reSize(v, v->realsize * 3 / 2 + len_s);
             }
-//            if (len_s > len_d) //插入大于原生；向后移动
-//            {
-////                for (u32 j = v->size - 1; j >= i + len_d; j--)
-////                    v->data[j + len_s - len_d] = v->data[j];
-//                memcpy(v->data+i+len_s,v->data+i+len_d,v->size-i-len_d);
-//            }
-//            else if (len_d > len_s)
-//            { //向前移动
-////                for (u32 j = i + len_s; (j - len_s + len_d) < v->size; j++)
-////                    v->data[j] = v->data[j - len_s + len_d];
-//                memcpy(v->data+i+len_s,v->data+i+len_d,v->size-i-len_d);
-//                memset(v->data + v->size - len_d + len_s, 0, sizeof(v->data[0]) * (len_d - len_s));
-//            }
-            if(len_d != len_s)
-                memcpy(v->data+i+len_s,v->data+i+len_d,v->size-i-len_d);
+            //            if (len_s > len_d) //插入大于原生；向后移动
+            //            {
+            ////                for (u32 j = v->size - 1; j >= i + len_d; j--)
+            ////                    v->data[j + len_s - len_d] = v->data[j];
+            //                memcpy(v->data+i+len_s,v->data+i+len_d,v->size-i-len_d);
+            //            }
+            //            else if (len_d > len_s)
+            //            { //向前移动
+            ////                for (u32 j = i + len_s; (j - len_s + len_d) < v->size; j++)
+            ////                    v->data[j] = v->data[j - len_s + len_d];
+            //                memcpy(v->data+i+len_s,v->data+i+len_d,v->size-i-len_d);
+            //                memset(v->data + v->size - len_d + len_s, 0, sizeof(v->data[0]) * (len_d - len_s));
+            //            }
+            if (len_d != len_s)
+                memcpy(v->data + i + len_s, v->data + i + len_d, v->size - i - len_d);
             if (len_d > len_s)
                 memset(v->data + v->size - len_d + len_s, 0, sizeof(v->data[0]) * (len_d - len_s));
             for (u32 j = 0; j < len_s; j++)
