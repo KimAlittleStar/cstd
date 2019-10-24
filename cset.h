@@ -71,6 +71,7 @@ typedef struct __SET_typeClass_t
     u32 size;
     void (*deleteSub)(const typeClass *ele);
     u8 (*compare)(const typeClass *a, const typeClass *b);
+    void (*toString)(const typeClass *a);
 } SET_typeClass_t;
 
 SET_typeClass_t *SET_newtypeClass_t(void);
@@ -79,11 +80,16 @@ void SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele);
 void SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele);
 u32 SET_getSizetypeClass_t(SET_typeClass_t *set);
 typeClass *SET_toDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
-const SET_typeClass_node_t *SET_nexttypeClass_t(const SET_typeClass_node_t *item);
+typeClass **SET_itemDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
+void SET_showtypeClass_t(SET_typeClass_t *set);
+typeClass *SET_findMaxtypeClass_t(SET_typeClass_t *set);
+typeClass *SET_findMintypeClass_t(SET_typeClass_t *set);
+typeClass SET_removeMax(SET_typeClass_t *set);
+typeClass SET_removeMin(SET_typeClass_t *set);
 
 void SET_deletetypeClass_node_t(void (*freesub)(const typeClass *d), SET_typeClass_node_t *node);
 u32 SET_toDatatypeClass_node_t(SET_typeClass_node_t *node, typeClass *array);
-
+void SET_itemDatatypeClass_node_t(SET_typeClass_node_t *root, typeClass **array, u32 *lengh);
 _Static SET_typeClass_node_t *SET_doubleRotateLefttypeClass(SET_typeClass_node_t *s);
 _Static SET_typeClass_node_t *SET_doubleRotateRighttypeClass(SET_typeClass_node_t *s);
 _Static SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t *s);
@@ -96,8 +102,9 @@ SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
                                                  void (*deleteSub)(const typeClass *ele),
                                                  const typeClass *value, u32 *size);
 
-typeClass SET_removeMintypeClass_t(SET_typeClass_node_t *s);
-
 u8 SET_heighttypeClass(SET_typeClass_node_t *s);
+void SET_showtypeClass_node_t(SET_typeClass_node_t *root, void (*toString)(const typeClass *a));
+
+typeClass *SET_findtypeClass_t(SET_typeClass_t *set, const typeClass *v);
 
 #endif // _cset.h

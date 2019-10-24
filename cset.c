@@ -4,11 +4,16 @@ u8 compare_temp(const typeClass *a, const typeClass *b)
 {
     return *a < *b;
 }
+void toString_temp(const typeClass *a)
+{
+    VPRINTF("%d \n", *a);
+}
 void cset_test_demo(void)
 {
     SET_typeClass_t *test = SET_newtypeClass_t();
     test->compare = compare_temp;
     test->deleteSub = NULL;
+    test->toString = toString_temp;
     for (u32 i = 0; i < 10; i++)
         SET_inserttypeClass_t(test, rand() & 0xFFFFFF);
     u32 len = 0;
@@ -21,21 +26,32 @@ void cset_test_demo(void)
 
     SET_removetypeClass_t(test, 6334);
     printf("\nremove 6334\n");
-    data = SET_toDatatypeClass_t(test, &len);
-    for (u32 i = 0; i < len; i++)
-    {
-        printf("%d\n", data[i]);
-    }
-    free(data);
+    SET_showtypeClass_t(test);
+    // data = SET_toDatatypeClass_t(test, &len);
+    // for (u32 i = 0; i < len; i++)
+    // {
+    //     printf("%d\n", data[i]);
+    // }
+    // free(data);
 
     SET_removetypeClass_t(test, 41);
     printf("\nremove 41\n");
-    data = SET_toDatatypeClass_t(test, &len);
-    for (u32 i = 0; i < len; i++)
-    {
-        printf("%d\n", data[i]);
-    }
-    free(data);
+    SET_showtypeClass_t(test);
+    // data = SET_toDatatypeClass_t(test, &len);
+    // for (u32 i = 0; i < len; i++)
+    // {
+    //     printf("%d\n", data[i]);
+    // }
+    // free(data);
+
+    SET_removeMax(test);
+    printf("\nremove Max\n");
+    SET_showtypeClass_t(test);
+
+    SET_removeMin(test);
+    printf("\nremove Min\n");
+    SET_showtypeClass_t(test);
+
 }
 
 SET_typeClass_t *SET_newtypeClass_t(void)
@@ -185,20 +201,6 @@ void SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele)
     set->root = SET_inserttypeClass_node_t(set->root, set->compare, &ele, &set->size);
 }
 
-typeClass SET_removeMintypeClass_t(SET_typeClass_node_t *s)
-{
-    typeClass ret = {0};
-    if (s == NULL)
-        return ret;
-    while (s->left != NULL && s->left->left != NULL)
-        s = s->left;
-    SET_typeClass_node_t *min = s->left;
-    s->left = min->right;
-    ret = min->data;
-    free(min);
-    return ret;
-}
-
 _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
                                                          u8 (*compare)(const typeClass *a, const typeClass *b),
                                                          void (*deleteSub)(const typeClass *ele),
@@ -275,7 +277,8 @@ _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *r
 
 void SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele)
 {
-    SET_removetypeClass_node_t(set->root, set->compare, set->deleteSub, &ele, &set->size);
+    if(set == NULL   || set->compare == NULL)   return;
+    set->root = SET_removetypeClass_node_t(set->root, set->compare, set->deleteSub, &ele, &set->size);
 }
 u32 SET_getSizetypeClass_t(SET_typeClass_t *set)
 {
@@ -314,7 +317,111 @@ typeClass *SET_toDatatypeClass_t(SET_typeClass_t *set, u32 *lengh)
     *(lengh) = SET_toDatatypeClass_node_t(set->root, ret);
     return ret;
 }
-
-const SET_typeClass_node_t *SET_nexttypeClass_t(const SET_typeClass_node_t *item)
+void SET_itemDatatypeClass_node_t(SET_typeClass_node_t *root, typeClass **array, u32 *lengh)
 {
+    if (root == NULL || array == NULL)
+        return;
+    SET_itemDatatypeClass_node_t(root->left, array + (*lengh), lengh);
+    *(array + (*lengh)) = &root->data;
+    (*lengh)++;
+    SET_itemDatatypeClass_node_t(root->right, array + (*lengh), lengh);
+}
+
+typeClass **SET_itemDatatypeClass_t(SET_typeClass_t *set, u32 *lengh)
+{
+    if (set == NULL || lengh == NULL)
+        return NULL;
+    *lengh = 0;
+    typeClass **ret = (typeClass **)malloc(sizeof(typeClass *) * set->size);
+    if (ret == NULL)
+        return ret;
+    SET_itemDatatypeClass_node_t(set->root, ret, lengh);
+    return ret;
+}
+
+typeClass *SET_findtypeClass_t(SET_typeClass_t *set, const typeClass *v)
+{
+    SET_typeClass_node_t *item = NULL;
+    typeClass *ret = NULL;
+    if (set == NULL || set->compare == NULL)
+        return NULL;
+    item = set->root;
+    while (item != NULL)
+    {
+        if (set->compare(v, &item->data))
+        {
+            item = item->left;
+        }
+        else if (set->compare(&item->data, v))
+        {
+            item = item->right;
+        }
+        else
+        { /* find the item; */
+            ret = &(item->data);
+        }
+    }
+    return ret;
+}
+void SET_showtypeClass_node_t(SET_typeClass_node_t *root, void (*toString)(const typeClass *a))
+{
+    if (root == NULL)
+    {
+        /* du nothing */
+        return;
+    }
+    SET_showtypeClass_node_t(root->left, toString);
+    toString(&root->data);
+    SET_showtypeClass_node_t(root->right, toString);
+}
+void SET_showtypeClass_t(SET_typeClass_t *set)
+{
+    if (set == NULL || set->toString == NULL)
+        return;
+    VPRINTF("\nTHIS SET SIZE = %u;\n",set->size);
+    SET_showtypeClass_node_t(set->root, set->toString);
+}
+
+typeClass *SET_findMaxtypeClass_t(SET_typeClass_t *set)
+{
+    if (set == NULL || set->root == NULL)
+        return NULL;
+    SET_typeClass_node_t *item = set->root;
+    while (item->right != NULL)
+        item = item->right;
+    return &item->data;
+}
+typeClass *SET_findMintypeClass_t(SET_typeClass_t *set)
+{
+    if (set == NULL || set->root == NULL)
+        return NULL;
+    SET_typeClass_node_t *item = set->root;
+    while (item->left != NULL)
+        item = item->left;
+    return &item->data;
+}
+typeClass SET_removeMax(SET_typeClass_t *set)
+{
+    typeClass ret = {0};
+    if (set == NULL || set->compare == NULL ||set->root == NULL)
+        return ret;
+    ret = (*SET_findMaxtypeClass_t(set));
+    set->root = SET_removetypeClass_node_t(set->root, set->compare,
+                               set->deleteSub,
+                               &ret,
+                               &set->size);
+    return  ret;
+}
+typeClass SET_removeMin(SET_typeClass_t *set)
+{
+    typeClass ret = {0};
+    if (set == NULL || set->compare == NULL ||set->root == NULL)
+        return ret;
+    ret = (*SET_findMintypeClass_t(set));
+    set->root = SET_removetypeClass_node_t(set->root, set->compare,
+                               set->deleteSub,
+                               &ret,
+                               &set->size);
+    return  ret;
+
 }
