@@ -8,13 +8,17 @@ void toString_temp(const typeClass *a)
 {
     VPRINTF("%d \n", *a);
 }
-void cset_test_demo(void)
+SET_Define(u32, u16_t)
+
+    SET_Declare_Set(u32, u16_t, compare_temp, NULL, toString_temp)
+
+        void cset_test_demo(void)
 {
     SET_typeClass_t *test = SET_newtypeClass_t();
     test->compare = compare_temp;
     test->deleteSub = NULL;
     test->toString = toString_temp;
-    for (u32 i = 0; i < 10; i++)
+    for (u32 i = 0; i < 15; i++)
         SET_inserttypeClass_t(test, rand() & 0xFFFFFF);
     u32 len = 0;
     typeClass *data = SET_toDatatypeClass_t(test, &len);
@@ -44,14 +48,35 @@ void cset_test_demo(void)
     // }
     // free(data);
 
-    SET_removeMax(test);
+    SET_removeMaxtypeClass_t(test);
     printf("\nremove Max\n");
     SET_showtypeClass_t(test);
 
-    SET_removeMin(test);
+    SET_removeMintypeClass_t(test);
     printf("\nremove Min\n");
     SET_showtypeClass_t(test);
-
+    while (SET_getSizetypeClass_t(test) != 0) {
+        printf("remove and size = %d\n",test->size);
+        SET_removeMaxtypeClass_t(test);
+        SET_removeMintypeClass_t(test);
+        SET_showtypeClass_t(test);
+    }
+#if 1
+    SET_u16_t *set = SET_newSET_u16_t();
+    for (u32 i = 0; i < 10; i++)
+    {
+        set->insert(set, rand() & 0xFFFFF);
+    }
+    set->show(set);
+    set->removeMax(set);
+    set->show(set);
+    set->removeMax(set);
+    set->show(set);
+    set->removeMin(set);
+    set->show(set);
+    set->removeMin(set);
+    set->show(set);
+#endif
 }
 
 SET_typeClass_t *SET_newtypeClass_t(void)
@@ -61,6 +86,20 @@ SET_typeClass_t *SET_newtypeClass_t(void)
     {
         ret->size = 0;
         ret->root = NULL;
+        ret->deleteSub = NULL;
+        ret->compare = NULL;
+        ret->toString = NULL;
+        ret->insert = SET_inserttypeClass_t;
+        ret->remove = SET_removetypeClass_t;
+        ret->getSize = SET_getSizetypeClass_t;
+        ret->toData = SET_toDatatypeClass_t;
+        ret->itemData = SET_itemDatatypeClass_t;
+        ret->show = SET_showtypeClass_t;
+        ret->find = SET_findtypeClass_t;
+        ret->findMax = SET_findMaxtypeClass_t;
+        ret->findMin = SET_findMintypeClass_t;
+        ret->removeMax = SET_removeMaxtypeClass_t;
+        ret->removeMin = SET_removeMintypeClass_t;
     }
     return ret;
 }
@@ -194,11 +233,13 @@ _Static SET_typeClass_node_t *SET_inserttypeClass_node_t(SET_typeClass_node_t *r
                   1;
     return root;
 }
-void SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele)
+u8 SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele)
 {
     if (set == NULL || set->compare == NULL)
-        return;
+        return 0;
+    u32 cursize = set->size;
     set->root = SET_inserttypeClass_node_t(set->root, set->compare, &ele, &set->size);
+    return (cursize < set->size);
 }
 
 _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
@@ -215,7 +256,7 @@ _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *r
         root->left = SET_removetypeClass_node_t(root->left, compare, deleteSub, value, size);
         if (SET_heighttypeClass(root->right) - SET_heighttypeClass(root->left) == 2)
         {
-            if (compare(&root->right->data, value))
+            if (SET_heighttypeClass(root->right->right) > SET_heighttypeClass(root->right->left))
                 root = SET_singleRotateRighttypeClass(root);
             else
                 root = SET_doubleRotateRighttypeClass(root);
@@ -226,7 +267,7 @@ _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *r
         root->right = SET_removetypeClass_node_t(root->right, compare, deleteSub, value, size);
         if (SET_heighttypeClass(root->left) - SET_heighttypeClass(root->right) == 2)
         {
-            if (compare(value, &root->left->data))
+            if (SET_heighttypeClass(root->left->left) > SET_heighttypeClass(root->left->right))
                 root = SET_singleRotateLefttypeClass(root);
             else
                 root = SET_doubleRotateLefttypeClass(root);
@@ -251,7 +292,7 @@ _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *r
             root->left = SET_removetypeClass_node_t(root->left, compare, NULL, &root->data, size);
             if (SET_heighttypeClass(root->right) - SET_heighttypeClass(root->left) == 2)
             {
-                if (compare(&root->right->data, value))
+                if (SET_heighttypeClass(root->right->right) > SET_heighttypeClass(root->right->left))
                     root = SET_singleRotateRighttypeClass(root);
                 else
                     root = SET_doubleRotateRighttypeClass(root);
@@ -275,10 +316,13 @@ _Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *r
     return root;
 }
 
-void SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele)
+u8 SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele)
 {
-    if(set == NULL   || set->compare == NULL)   return;
+    if (set == NULL || set->compare == NULL)
+        return 0;
+    u32 cursize = set->size;
     set->root = SET_removetypeClass_node_t(set->root, set->compare, set->deleteSub, &ele, &set->size);
+    return (cursize < set->size);
 }
 u32 SET_getSizetypeClass_t(SET_typeClass_t *set)
 {
@@ -363,6 +407,7 @@ typeClass *SET_findtypeClass_t(SET_typeClass_t *set, const typeClass *v)
     }
     return ret;
 }
+
 void SET_showtypeClass_node_t(SET_typeClass_node_t *root, void (*toString)(const typeClass *a))
 {
     if (root == NULL)
@@ -378,7 +423,7 @@ void SET_showtypeClass_t(SET_typeClass_t *set)
 {
     if (set == NULL || set->toString == NULL)
         return;
-    VPRINTF("\nTHIS SET SIZE = %u;\n",set->size);
+    VPRINTF("\nTHIS SET SIZE = %u;\n", set->size);
     SET_showtypeClass_node_t(set->root, set->toString);
 }
 
@@ -391,6 +436,7 @@ typeClass *SET_findMaxtypeClass_t(SET_typeClass_t *set)
         item = item->right;
     return &item->data;
 }
+
 typeClass *SET_findMintypeClass_t(SET_typeClass_t *set)
 {
     if (set == NULL || set->root == NULL)
@@ -400,28 +446,29 @@ typeClass *SET_findMintypeClass_t(SET_typeClass_t *set)
         item = item->left;
     return &item->data;
 }
-typeClass SET_removeMax(SET_typeClass_t *set)
+
+typeClass SET_removeMaxtypeClass_t(SET_typeClass_t *set)
 {
     typeClass ret = {0};
-    if (set == NULL || set->compare == NULL ||set->root == NULL)
+    if (set == NULL || set->compare == NULL || set->root == NULL)
         return ret;
     ret = (*SET_findMaxtypeClass_t(set));
     set->root = SET_removetypeClass_node_t(set->root, set->compare,
-                               set->deleteSub,
-                               &ret,
-                               &set->size);
-    return  ret;
+                                           set->deleteSub,
+                                           &ret,
+                                           &set->size);
+    return ret;
 }
-typeClass SET_removeMin(SET_typeClass_t *set)
+
+typeClass SET_removeMintypeClass_t(SET_typeClass_t *set)
 {
     typeClass ret = {0};
-    if (set == NULL || set->compare == NULL ||set->root == NULL)
+    if (set == NULL || set->compare == NULL || set->root == NULL)
         return ret;
     ret = (*SET_findMintypeClass_t(set));
     set->root = SET_removetypeClass_node_t(set->root, set->compare,
-                               set->deleteSub,
-                               &ret,
-                               &set->size);
-    return  ret;
-
+                                           set->deleteSub,
+                                           &ret,
+                                           &set->size);
+    return ret;
 }
