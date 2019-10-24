@@ -1,6 +1,6 @@
 /**
   * @file cvector.h
-  * @breif 此头文件使用C语言实现了类似于C++ 中 Vector 中的功能 实现了 以下函数
+  * @brief 此头文件使用C语言实现了类似于C++ 中 Vector 中的功能 实现了 以下函数
   * resize,size,at,clear,append,insert,removelast,removeat,new,delete
   * 文件实现需要实现以下函数:
   * malloc,free,memcpy,memset

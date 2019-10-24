@@ -1,3 +1,21 @@
+/**
+ **********************************************************************
+ * @file cset.h
+ * @brief include 本头文件后，将可以使用 S_Define S_Declare_Set 实现代码
+ * 膨胀，实现标准容器set
+ * @verbatim
+ * >Introduce: 本文件的SET 数据容器底层实现使用 AVL 二叉树实现，平均时间复杂度为
+ * O(nLogn);
+ * >Depend On: 本文件的测试 依靠于 cset.c 所有宏定义的函数都可在cset.c中拥有映射函数
+ * 如果你想正常使用此数据容器,那么你至少需要实现 compare 库函数;
+ * >Include: 默认include stdlib.h string.h stdio.h 
+ * @endverbatim
+ * @author  kimalittlestar@gmail.com
+ * @date 2019-10-24
+ * @version V0.0
+ * @note CopyRight By XXXX Co. Ltd All right reserve
+ **********************************************************************
+*/
 #ifndef CSET_H
 #define CSET_H
 
@@ -9,8 +27,6 @@
 #ifndef PRINTF_ENABLE
 #define PRINTF_ENABLE 1
 #endif
-
-#define _Static //临时定义
 
 #if PRINTF_ENABLE == 1
 #define VPRINTF(ftm, ...) printf(ftm, ##__VA_ARGS__)
@@ -89,6 +105,7 @@ void *memset(void *des, int v, u64 size);
         T *(*find)(struct __SET_##TName##_t * set, const T *v);      \
         T *(*findMax)(struct __SET_##TName##_t * set);               \
         T *(*findMin)(struct __SET_##TName##_t * set);               \
+        void (*clear)(struct __SET_##TName##_t * set);               \
         T(*removeMax)                                                \
         (struct __SET_##TName##_t * set);                            \
         T(*removeMin)                                                \
@@ -128,6 +145,7 @@ void *memset(void *des, int v, u64 size);
             ret->findMin = __SET_findMinSET_##TName;                   \
             ret->removeMax = __SET_removeMaxSET_##TName;               \
             ret->removeMin = __SET_removeMinSET_##TName;               \
+            ret->clear = __SET_clearSET_##TName;                       \
         }                                                              \
         return ret;                                                    \
     }
@@ -631,6 +649,26 @@ void *memset(void *des, int v, u64 size);
 
 /**
  ***********************************************************************
+ * @brief 实现clear函数，与delete函数类似，只是最后并不free  自身
+ * @param SET_##TName *set                 指向需要操作的set指针
+ * @return void    
+ * @author kimalittlestar@gmail.com
+ * @date Create at 2019-10-24
+ * @note AllCopyRight by XXX CO ,. LTD
+ **********************************************************************
+ */
+#define S_CLEAR(T, TName)                                            \
+    void __SET_clearSET_##TName(SET_##TName *set)                    \
+    {                                                                \
+        if (set != NULL)                                             \
+            return;                                                  \
+        __SET_deleteSET_##TName##_node_t(set->deleteSub, set->root); \
+        set->size = 0;                                               \
+        set->root = NULL;                                            \
+    }
+
+/**
+ ***********************************************************************
  * @brief 声明 某一个数据结构的SET 结构 此宏应该使用在 .h文件中
  * @param T                     SET中数据元素的类型
  * @param TName                 你给此数据元素类型起的别名
@@ -684,6 +722,7 @@ void *memset(void *des, int v, u64 size);
     extern T *__SET_findMinSET_##TName(SET_##TName *set);                                                 \
     extern T __SET_removeMaxSET_##TName(SET_##TName *set);                                                \
     extern T __SET_removeMinSET_##TName(SET_##TName *set);                                                \
+    void __SET_clearSET_##TName(SET_##TName *set);                                                        \
     S_NEW(T, TName, Compare, ToString, DeleteSub)                                                         \
     S_DELETE(T, TName)                                                                                    \
     S_INSERT(T, TName)                                                                                    \
@@ -696,71 +735,9 @@ void *memset(void *des, int v, u64 size);
     S_FINDMAX(T, TName)                                                                                   \
     S_FINDMIN(T, TName)                                                                                   \
     S_REMOVEMAX(T, TName)                                                                                 \
-    S_REMOVEMIN(T, TName)
+    S_REMOVEMIN(T, TName)                                                                                 \
+    S_CLEAR(T, TName)
 
 //-----------------------------------------------//
-/*本set底层数据结构使用 AVL Tree实现,现在处处于开发阶段,首先使用普通代码实现,而后才会使用真正的膨胀代码;*/
-typedef unsigned int typeClass;
-
-typedef struct __SET_typeClass_node
-{
-    typeClass data;
-    struct __SET_typeClass_node *left;
-    struct __SET_typeClass_node *right;
-    u8 heigh;
-} SET_typeClass_node_t;
-
-typedef struct __SET_typeClass_t
-{
-    SET_typeClass_node_t *root;
-    u32 size;
-    void (*deleteSub)(const typeClass *ele);
-    u8 (*compare)(const typeClass *a, const typeClass *b);
-    void (*toString)(const typeClass *a);
-    u8 (*insert)(struct __SET_typeClass_t *set, const typeClass ele);
-    u8 (*remove)(struct __SET_typeClass_t *set, const typeClass ele);
-    u32 (*getSize)(struct __SET_typeClass_t *set);
-    typeClass *(*toData)(struct __SET_typeClass_t *set, u32 *lengh);
-    typeClass **(*itemData)(struct __SET_typeClass_t *set, u32 *lengh);
-    void (*show)(struct __SET_typeClass_t *set);
-    typeClass *(*find)(struct __SET_typeClass_t *set, const typeClass *v);
-    typeClass *(*findMax)(struct __SET_typeClass_t *set);
-    typeClass *(*findMin)(struct __SET_typeClass_t *set);
-    typeClass (*removeMax)(struct __SET_typeClass_t *set);
-    typeClass (*removeMin)(struct __SET_typeClass_t *set);
-
-} SET_typeClass_t;
-
-SET_typeClass_t *SET_newtypeClass_t(void);
-void SET_deletetypeClass_t(SET_typeClass_t *set);
-u8 SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele);
-u8 SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele);
-u32 SET_getSizetypeClass_t(SET_typeClass_t *set);
-typeClass *SET_toDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
-typeClass **SET_itemDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
-void SET_showtypeClass_t(SET_typeClass_t *set);
-typeClass *SET_findtypeClass_t(SET_typeClass_t *set, const typeClass *v);
-typeClass *SET_findMaxtypeClass_t(SET_typeClass_t *set);
-typeClass *SET_findMintypeClass_t(SET_typeClass_t *set);
-typeClass SET_removeMaxtypeClass_t(SET_typeClass_t *set);
-typeClass SET_removeMintypeClass_t(SET_typeClass_t *set);
-
-void SET_deletetypeClass_node_t(void (*freesub)(const typeClass *d), SET_typeClass_node_t *node);
-u32 SET_toDatatypeClass_node_t(SET_typeClass_node_t *node, typeClass *array);
-void SET_itemDatatypeClass_node_t(SET_typeClass_node_t *root, typeClass **array, u32 *lengh);
-_Static SET_typeClass_node_t *SET_doubleRotateLefttypeClass(SET_typeClass_node_t *s);
-_Static SET_typeClass_node_t *SET_doubleRotateRighttypeClass(SET_typeClass_node_t *s);
-_Static SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t *s);
-_Static SET_typeClass_node_t *SET_singleRotateRighttypeClass(SET_typeClass_node_t *s);
-_Static SET_typeClass_node_t *SET_inserttypeClass_node_t(SET_typeClass_node_t *root,
-                                                         u8 (*compare)(const typeClass *a, const typeClass *b),
-                                                         const typeClass *value, u32 *size);
-SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
-                                                 u8 (*compare)(const typeClass *a, const typeClass *b),
-                                                 void (*deleteSub)(const typeClass *ele),
-                                                 const typeClass *value, u32 *size);
-
-u8 SET_heighttypeClass(SET_typeClass_node_t *s);
-void SET_showtypeClass_node_t(SET_typeClass_node_t *root, void (*toString)(const typeClass *a));
 
 #endif // _cset.h

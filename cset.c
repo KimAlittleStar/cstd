@@ -1,4 +1,89 @@
+/**
+ **********************************************************************
+ * @file cset.c
+ * @brief 此文件属于 cset 项目中 SET.h文件的测试 demo文件，所有在set 方法中可能用到的
+ * 函数都会在这里有映射，因此如果出现BUG可以使用此文件进行调试，当然更新相应功能也需要使用此文件更新；
+ * @verbatim
+ * >Introduce: 利用宏定义膨胀代码可以将set 这一C++中的标准容器使用到C语言中；
+ * >Depend On: set 需要用到 以下几个库函数 malloc free rand memset memcpy
+ * 如果需要正常使用 set 至少需要实现 compare 函数，否则set将不能使用；
+ * >Include: 默认include stdio stdlib
+ * @endverbatim
+ * @author  kimalittlestar@gmail.com
+ * @date 2019-10-24
+ * @version V0.0
+ * @note CopyRight By XXXX Co. Ltd All right reserve
+ **********************************************************************
+*/
 #include "cset.h"
+/* 不影响cset.h 中的所有函数， 其中cset.h 中的所有函数够可以在下列函数中 得到映射*/
+
+/*本set底层数据结构使用 AVL Tree实现,现在处处于开发阶段,首先使用普通代码实现,而后才会使用真正的膨胀代码;*/
+typedef unsigned int typeClass;
+
+typedef struct __SET_typeClass_node
+{
+    typeClass data;
+    struct __SET_typeClass_node *left;
+    struct __SET_typeClass_node *right;
+    u8 heigh;
+} SET_typeClass_node_t;
+
+typedef struct __SET_typeClass_t
+{
+    SET_typeClass_node_t *root;
+    u32 size;
+    void (*deleteSub)(const typeClass *ele);
+    /*! @brief 作为元素的比较函数 */
+    u8 (*compare)(const typeClass *a, const typeClass *b);
+    void (*toString)(const typeClass *a);
+    u8 (*insert)(struct __SET_typeClass_t *set, const typeClass ele);
+    u8 (*remove)(struct __SET_typeClass_t *set, const typeClass ele);
+    u32 (*getSize)(struct __SET_typeClass_t *set);
+    typeClass *(*toData)(struct __SET_typeClass_t *set, u32 *lengh);
+    typeClass **(*itemData)(struct __SET_typeClass_t *set, u32 *lengh);
+    void (*show)(struct __SET_typeClass_t *set);
+    typeClass *(*find)(struct __SET_typeClass_t *set, const typeClass *v);
+    typeClass *(*findMax)(struct __SET_typeClass_t *set);
+    typeClass *(*findMin)(struct __SET_typeClass_t *set);
+    typeClass (*removeMax)(struct __SET_typeClass_t *set);
+    typeClass (*removeMin)(struct __SET_typeClass_t *set);
+
+} SET_typeClass_t;
+
+SET_typeClass_t *SET_newtypeClass_t(void);
+void SET_deletetypeClass_t(SET_typeClass_t *set);
+u8 SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele);
+u8 SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele);
+u32 SET_getSizetypeClass_t(SET_typeClass_t *set);
+typeClass *SET_toDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
+typeClass **SET_itemDatatypeClass_t(SET_typeClass_t *set, u32 *lengh);
+void SET_showtypeClass_t(SET_typeClass_t *set);
+typeClass *SET_findtypeClass_t(SET_typeClass_t *set, const typeClass *v);
+typeClass *SET_findMaxtypeClass_t(SET_typeClass_t *set);
+typeClass *SET_findMintypeClass_t(SET_typeClass_t *set);
+typeClass SET_removeMaxtypeClass_t(SET_typeClass_t *set);
+typeClass SET_removeMintypeClass_t(SET_typeClass_t *set);
+
+void SET_deletetypeClass_node_t(void (*freesub)(const typeClass *d), SET_typeClass_node_t *node);
+u32 SET_toDatatypeClass_node_t(SET_typeClass_node_t *node, typeClass *array);
+void SET_itemDatatypeClass_node_t(SET_typeClass_node_t *root, typeClass **array, u32 *lengh);
+SET_typeClass_node_t *SET_doubleRotateLefttypeClass(SET_typeClass_node_t *s);
+SET_typeClass_node_t *SET_doubleRotateRighttypeClass(SET_typeClass_node_t *s);
+SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t *s);
+SET_typeClass_node_t *SET_singleRotateRighttypeClass(SET_typeClass_node_t *s);
+SET_typeClass_node_t *SET_inserttypeClass_node_t(SET_typeClass_node_t *root,
+                                                 u8 (*compare)(const typeClass *a, const typeClass *b),
+                                                 const typeClass *value, u32 *size);
+SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
+                                                 u8 (*compare)(const typeClass *a, const typeClass *b),
+                                                 void (*deleteSub)(const typeClass *ele),
+                                                 const typeClass *value, u32 *size);
+
+u8 SET_heighttypeClass(SET_typeClass_node_t *s);
+void SET_showtypeClass_node_t(SET_typeClass_node_t *root, void (*toString)(const typeClass *a));
+
+/*----------------------------------函数声明结束---------------------------------------------*/
 
 u8 compare_temp(const typeClass *a, const typeClass *b)
 {
@@ -9,10 +94,21 @@ void toString_temp(const typeClass *a)
     VPRINTF("%d \n", *a);
 }
 SET_Define(u32, u16_t)
-
+    /**/
     SET_Declare_Set(u32, u16_t, compare_temp, NULL, toString_temp)
 
-        void cset_test_demo(void)
+    /**
+ ***********************************************************************
+ * @brief 此函数是一个实力demo函数，这个函数是笔者作为测试函数的一个入口函数
+ * @param param1                 Explanation_theParam
+ * @param param1                 Explanation_theParam
+ * @return Return_Value_Type    Explanation_theReturn
+ * @author kimalittlestar@gmail.com
+ * @date Create at 2019-10-24
+ * @note AllCopyRight by XXX CO ,. LTD
+ **********************************************************************
+ */
+    void cset_test_demo(void)
 {
     SET_typeClass_t *test = SET_newtypeClass_t();
     test->compare = compare_temp;
@@ -55,27 +151,28 @@ SET_Define(u32, u16_t)
     SET_removeMintypeClass_t(test);
     printf("\nremove Min\n");
     SET_showtypeClass_t(test);
-    while (SET_getSizetypeClass_t(test) != 0) {
-        printf("remove and size = %d\n",test->size);
+    while (SET_getSizetypeClass_t(test) != 0)
+    {
+        printf("remove and size = %d\n", test->size);
         SET_removeMaxtypeClass_t(test);
         SET_removeMintypeClass_t(test);
         SET_showtypeClass_t(test);
     }
 #if 1
     SET_u16_t *set = SET_newSET_u16_t();
-    for (u32 i = 0; i < 10; i++)
+    for (u32 i = 0; i < 5000; i++)
     {
         set->insert(set, rand() & 0xFFFFF);
     }
-    set->show(set);
-    set->removeMax(set);
-    set->show(set);
-    set->removeMax(set);
-    set->show(set);
-    set->removeMin(set);
-    set->show(set);
-    set->removeMin(set);
-    set->show(set);
+
+    while (set->size != 0)
+    {
+        printf("this set size = %d\n", set->size);
+        printf("remove max = %d\n", set->removeMax(set));
+        printf("remove max = %d\n", set->removeMin(set));
+    }
+    SET_deleteSET_u16_t(set);
+    printf("over that \n");
 #endif
 }
 
@@ -140,18 +237,18 @@ inline u8 SET_heighttypeClass(SET_typeClass_node_t *s)
     return (s == NULL) ? (0) : (s->heigh);
 }
 
-_Static SET_typeClass_node_t *SET_doubleRotateLefttypeClass(SET_typeClass_node_t *s)
+SET_typeClass_node_t *SET_doubleRotateLefttypeClass(SET_typeClass_node_t *s)
 {
     s->left = SET_singleRotateRighttypeClass(s->left);
     return SET_singleRotateLefttypeClass(s);
 }
-_Static SET_typeClass_node_t *SET_doubleRotateRighttypeClass(SET_typeClass_node_t *s)
+SET_typeClass_node_t *SET_doubleRotateRighttypeClass(SET_typeClass_node_t *s)
 {
     s->right = SET_singleRotateLefttypeClass(s->right);
     return SET_singleRotateRighttypeClass(s);
 }
 
-_Static SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t *s)
+SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t *s)
 {
     SET_typeClass_node_t *s1;
     s1 = s->left;
@@ -169,7 +266,7 @@ _Static SET_typeClass_node_t *SET_singleRotateLefttypeClass(SET_typeClass_node_t
     return s1;
 }
 
-_Static SET_typeClass_node_t *SET_singleRotateRighttypeClass(SET_typeClass_node_t *s)
+SET_typeClass_node_t *SET_singleRotateRighttypeClass(SET_typeClass_node_t *s)
 {
     SET_typeClass_node_t *s1;
     s1 = s->right;
@@ -186,9 +283,9 @@ _Static SET_typeClass_node_t *SET_singleRotateRighttypeClass(SET_typeClass_node_
                 1;
     return s1;
 }
-_Static SET_typeClass_node_t *SET_inserttypeClass_node_t(SET_typeClass_node_t *root,
-                                                         u8 (*compare)(const typeClass *a, const typeClass *b),
-                                                         const typeClass *value, u32 *size)
+SET_typeClass_node_t *SET_inserttypeClass_node_t(SET_typeClass_node_t *root,
+                                                 u8 (*compare)(const typeClass *a, const typeClass *b),
+                                                 const typeClass *value, u32 *size)
 {
     if (root == NULL)
     {
@@ -242,10 +339,10 @@ u8 SET_inserttypeClass_t(SET_typeClass_t *set, const typeClass ele)
     return (cursize < set->size);
 }
 
-_Static SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
-                                                         u8 (*compare)(const typeClass *a, const typeClass *b),
-                                                         void (*deleteSub)(const typeClass *ele),
-                                                         const typeClass *value, u32 *size)
+SET_typeClass_node_t *SET_removetypeClass_node_t(SET_typeClass_node_t *root,
+                                                 u8 (*compare)(const typeClass *a, const typeClass *b),
+                                                 void (*deleteSub)(const typeClass *ele),
+                                                 const typeClass *value, u32 *size)
 {
     if (root == NULL)
     {
