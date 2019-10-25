@@ -406,7 +406,7 @@ void *memset(void *des, int v, u64 size);
             return 0;                                                                                                                                    \
         u32 cursize = set->size;                                                                                                                         \
         set->root = __SET_removeSET_##TName##_node_t(set->root, set->compare, set->deleteSub, &ele, &set->size);                                         \
-        return (cursize < set->size);                                                                                                                    \
+        return (cursize > set->size);                                                                                                                    \
     }
 /**
  ***********************************************************************

@@ -419,7 +419,7 @@ u8 SET_removetypeClass_t(SET_typeClass_t *set, const typeClass ele)
         return 0;
     u32 cursize = set->size;
     set->root = SET_removetypeClass_node_t(set->root, set->compare, set->deleteSub, &ele, &set->size);
-    return (cursize < set->size);
+    return (cursize > set->size);
 }
 u32 SET_getSizetypeClass_t(SET_typeClass_t *set)
 {
