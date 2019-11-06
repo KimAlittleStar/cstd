@@ -6,6 +6,15 @@
 #include <string.h>
 
 //---------------自定义类型区------------------//
+#ifndef PRINTF_ENABLE
+#define PRINTF_ENABLE 1
+#endif
+
+#if PRINTF_ENABLE == 1
+#define VPRINTF(ftm, ...) printf(ftm, ##__VA_ARGS__)
+#else
+#define VPRINTF(ftm, ...)
+#endif
 #if 1
 
 typedef unsigned int u32;
@@ -62,7 +71,7 @@ typedef struct __SQ_Classt
     u8 (*push)(struct __SQ_Classt *t, const Classt e);
     u8 (*enqueue)(struct __SQ_Classt *t, const Classt e);
     u8 (*dequeue)(struct __SQ_Classt *t);
-    u8 (*resize)(SQ_Classt *t, u32 newsize);
+    u8 (*resize)(struct __SQ_Classt *t, u32 newsize);
     void (*clean)(struct __SQ_Classt *t);
     void (*show)(struct __SQ_Classt *t);
     void (*toString)(const Classt *e);
