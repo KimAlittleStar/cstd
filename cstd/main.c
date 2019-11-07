@@ -18,10 +18,12 @@ void replace_demo(VCT_uint_t *v, template_t *des, u32 len_d, template_t *src, u3
 int main_testForSort(void);
 int main_testForReplace(void);
 void cset_test_demo(void);
+void cstackqueue_test(void);
 int main(void)
 {
     //    main_testForReplace();
-    cset_test_demo();
+//    cset_test_demo();
+    cstackqueue_test();
     return 0;
 }
 
