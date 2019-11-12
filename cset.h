@@ -476,10 +476,15 @@ void *memset(void *des, int v, u64 size);
     {                                                                                                                 \
         if (root == NULL || array == NULL)                                                                            \
             return;                                                                                                   \
-        __SET_itemDataSET_##TName##_node_t(root->left, array + (*lengh), lengh);                                      \
+        printf("1lengh = %d\n", *lengh);                                                                              \
+        __SET_itemDataSET_##TName##_node_t(root->left, array, lengh);                                                 \
+        printf("2lengh = %d\n", *lengh);                                                                              \
         *(array + (*lengh)) = &root->data;                                                                            \
+        printf("3lengh = %d\n", *lengh);                                                                              \
         (*lengh)++;                                                                                                   \
-        __SET_itemDataSET_##TName##_node_t(root->right, array + (*lengh), lengh);                                     \
+        printf("4lengh = %d\n", *lengh);                                                                              \
+        __SET_itemDataSET_##TName##_node_t(root->right, array, lengh);                                                \
+        printf("5lengh = %d\n", *lengh);                                                                              \
     }                                                                                                                 \
     /*! @brief 与 @see SET_toDataSET_##TName ,但此次返回的是元素指针数组 即全部都是真实引用 */ \
     /*! @brief 所有对此数组元素的操作都会真实的反映到SET中的元素中 */                         \
