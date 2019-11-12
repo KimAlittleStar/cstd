@@ -476,13 +476,9 @@ void *memset(void *des, int v, u64 size);
     {                                                                                                                 \
         if (root == NULL || array == NULL)                                                                            \
             return;                                                                                                   \
-        printf("1lengh = %d\n", *lengh);                                                                              \
         __SET_itemDataSET_##TName##_node_t(root->left, array, lengh);                                                 \
-        printf("2lengh = %d\n", *lengh);                                                                              \
         *(array + (*lengh)) = &root->data;                                                                            \
-        printf("3lengh = %d\n", *lengh);                                                                              \
         (*lengh)++;                                                                                                   \
-        printf("4lengh = %d\n", *lengh);                                                                              \
         __SET_itemDataSET_##TName##_node_t(root->right, array, lengh);                                                \
         printf("5lengh = %d\n", *lengh);                                                                              \
     }                                                                                                                 \
