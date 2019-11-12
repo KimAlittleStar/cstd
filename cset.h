@@ -93,7 +93,7 @@ void *memset(void *des, int v, u64 size);
     typedef struct __SET_##TName##_t                                 \
     {                                                                \
         SET_##TName##_node_t *root;                                  \
-        void (*deleteSub)(const T *ele);                             \
+        void (*deleteSub)(T * ele);                                  \
         u8 (*compare)(const T *a, const T *b);                       \
         void (*toString)(const T *a);                                \
         u8 (*insert)(struct __SET_##TName##_t * set, const T ele);   \
@@ -162,7 +162,7 @@ void *memset(void *des, int v, u64 size);
 #define S_DELETE(T, TName)                                                                                                \
     /*! @brief  这是一个递归调用的函数 将  SET_##TName##_node_t 下所有的 node;*/                          \
     /*! @brief 先释放data而后释放自己的内存空间;*/                                                          \
-    void __SET_deleteSET_##TName##_node_t(void (*freesub)(const T *d), SET_##TName##_node_t *node)                        \
+    void __SET_deleteSET_##TName##_node_t(void (*freesub)(T * d), SET_##TName##_node_t *node)                             \
     {                                                                                                                     \
         if (node == NULL)                                                                                                 \
             return;                                                                                                       \
@@ -266,30 +266,30 @@ void *memset(void *des, int v, u64 size);
             }                                                                                                                                \
             else                                                                                                                             \
             {                                                                                                                                \
-                root->data = (*value);                                                                                                       \
+                root->data = (*(T *)value);                                                                                                  \
                 root->left = root->right = NULL;                                                                                             \
                 root->heigh = 1;                                                                                                             \
                 (*size)++;                                                                                                                   \
             }                                                                                                                                \
             return root;                                                                                                                     \
         }                                                                                                                                    \
-        else if (compare(value, &root->data))                                                                                                \
+        else if (compare(value, (const T *)&root->data))                                                                                     \
         {                                                                                                                                    \
             root->left = __SET_insertSET_##TName##_node_t(root->left, compare, value, size);                                                 \
             if (__SET_heightSET_##TName(root->left) - __SET_heightSET_##TName(root->right) == 2)                                             \
             {                                                                                                                                \
-                if (compare(value, &root->left->data))                                                                                       \
+                if (compare(value, (const T *)&root->left->data))                                                                            \
                     root = __SET_singleRotateLeftSET_##TName(root);                                                                          \
                 else                                                                                                                         \
                     root = __SET_doubleRotateLeftSET_##TName(root);                                                                          \
             }                                                                                                                                \
         }                                                                                                                                    \
-        else if (compare(&root->data, value))                                                                                                \
+        else if (compare((const T *)&root->data, value))                                                                                     \
         {                                                                                                                                    \
             root->right = __SET_insertSET_##TName##_node_t(root->right, compare, value, size);                                               \
             if (__SET_heightSET_##TName(root->right) - __SET_heightSET_##TName(root->left) == 2)                                             \
             {                                                                                                                                \
-                if (compare(&root->right->data, value))                                                                                      \
+                if (compare((const T *)&root->right->data, value))                                                                           \
                     root = __SET_singleRotateRightSET_##TName(root);                                                                         \
                 else                                                                                                                         \
                     root = __SET_doubleRotateRightSET_##TName(root);                                                                         \
@@ -305,7 +305,7 @@ void *memset(void *des, int v, u64 size);
         if (set == NULL || set->compare == NULL)                                                                                             \
             return 0;                                                                                                                        \
         u32 cursize = set->size;                                                                                                             \
-        set->root = __SET_insertSET_##TName##_node_t(set->root, set->compare, &ele, &set->size);                                             \
+        set->root = __SET_insertSET_##TName##_node_t(set->root, set->compare, (const T *)&ele, &set->size);                                  \
         return (cursize < set->size);                                                                                                        \
     }
 /**
@@ -330,13 +330,13 @@ void *memset(void *des, int v, u64 size);
     /*! @author kimalittlestar@ gmail.com                                                           */                                                   \
     SET_##TName##_node_t *__SET_removeSET_##TName##_node_t(SET_##TName##_node_t *root,                                                                   \
                                                            u8 (*compare)(const T *a, const T *b),                                                        \
-                                                           void (*deleteSub)(const T *ele),                                                              \
+                                                           void (*deleteSub)(T * ele),                                                                   \
                                                            const T *value, u32 *size)                                                                    \
     {                                                                                                                                                    \
         if (root == NULL)                                                                                                                                \
         { /*! no this value; */                                                                                                                          \
         }                                                                                                                                                \
-        else if (compare(value, &root->data))                                                                                                            \
+        else if (compare(value, (const T *)&root->data))                                                                                                 \
         {                                                                                                                                                \
             root->left = __SET_removeSET_##TName##_node_t(root->left, compare, deleteSub, value, size);                                                  \
             if (__SET_heightSET_##TName(root->right) - __SET_heightSET_##TName(root->left) == 2)                                                         \
@@ -347,7 +347,7 @@ void *memset(void *des, int v, u64 size);
                     root = __SET_doubleRotateRightSET_##TName(root);                                                                                     \
             }                                                                                                                                            \
         }                                                                                                                                                \
-        else if (compare(&root->data, value))                                                                                                            \
+        else if (compare((const T *)&root->data, value))                                                                                                 \
         {                                                                                                                                                \
             root->right = __SET_removeSET_##TName##_node_t(root->right, compare, deleteSub, value, size);                                                \
             if (__SET_heightSET_##TName(root->left) - __SET_heightSET_##TName(root->right) == 2)                                                         \
@@ -373,7 +373,7 @@ void *memset(void *des, int v, u64 size);
                     deleteSub(&root->data);                                                                                                              \
                 root->data = temp->data;                                                                                                                 \
                 /* deleteSub == NULL because this min not to free ,just become root->data; */                                                            \
-                root->left = __SET_removeSET_##TName##_node_t(root->left, compare, NULL, &root->data, size);                                             \
+                root->left = __SET_removeSET_##TName##_node_t(root->left, compare, NULL, (const T *)&root->data, size);                                  \
                 if (__SET_heightSET_##TName(root->right) - __SET_heightSET_##TName(root->left) == 2)                                                     \
                 {                                                                                                                                        \
                     if (__SET_heightSET_##TName(root->right->right) > __SET_heightSET_##TName(root->right->left))                                        \
@@ -405,7 +405,7 @@ void *memset(void *des, int v, u64 size);
         if (set == NULL || set->compare == NULL)                                                                                                         \
             return 0;                                                                                                                                    \
         u32 cursize = set->size;                                                                                                                         \
-        set->root = __SET_removeSET_##TName##_node_t(set->root, set->compare, set->deleteSub, &ele, &set->size);                                         \
+        set->root = __SET_removeSET_##TName##_node_t(set->root, set->compare, set->deleteSub, (const T *)&ele, &set->size);                              \
         return (cursize > set->size);                                                                                                                    \
     }
 /**
@@ -476,10 +476,10 @@ void *memset(void *des, int v, u64 size);
     {                                                                                                                 \
         if (root == NULL || array == NULL)                                                                            \
             return;                                                                                                   \
-        __SET_itemDataSET_##TName##_node_t(root->left, array + (*lengh), lengh);                                      \
+        __SET_itemDataSET_##TName##_node_t(root->left, array, lengh);                                                 \
         *(array + (*lengh)) = &root->data;                                                                            \
         (*lengh)++;                                                                                                   \
-        __SET_itemDataSET_##TName##_node_t(root->right, array + (*lengh), lengh);                                     \
+        __SET_itemDataSET_##TName##_node_t(root->right, array, lengh);                                                \
     }                                                                                                                 \
     /*! @brief 与 @see SET_toDataSET_##TName ,但此次返回的是元素指针数组 即全部都是真实引用 */ \
     /*! @brief 所有对此数组元素的操作都会真实的反映到SET中的元素中 */                         \
@@ -503,30 +503,30 @@ void *memset(void *des, int v, u64 size);
  * @note AllCopyRight by XXX CO ,. LTD
  **********************************************************************
  */
-#define S_FIND(T, TName)                                   \
-    T *__SET_findSET_##TName(SET_##TName *set, const T *v) \
-    {                                                      \
-        SET_##TName##_node_t *item = NULL;                 \
-        T *ret = NULL;                                     \
-        if (set == NULL || set->compare == NULL)           \
-            return NULL;                                   \
-        item = set->root;                                  \
-        while (item != NULL)                               \
-        {                                                  \
-            if (set->compare(v, &item->data))              \
-            {                                              \
-                item = item->left;                         \
-            }                                              \
-            else if (set->compare(&item->data, v))         \
-            {                                              \
-                item = item->right;                        \
-            }                                              \
-            else                                           \
-            { /* find the item; */                         \
-                ret = &(item->data);                       \
-            }                                              \
-        }                                                  \
-        return ret;                                        \
+#define S_FIND(T, TName)                                      \
+    T *__SET_findSET_##TName(SET_##TName *set, const T *v)    \
+    {                                                         \
+        SET_##TName##_node_t *item = NULL;                    \
+        T *ret = NULL;                                        \
+        if (set == NULL || set->compare == NULL)              \
+            return NULL;                                      \
+        item = set->root;                                     \
+        while (item != NULL)                                  \
+        {                                                     \
+            if (set->compare(v, (const T *)&item->data))      \
+            {                                                 \
+                item = item->left;                            \
+            }                                                 \
+            else if (set->compare((const T *)&item->data, v)) \
+            {                                                 \
+                item = item->right;                           \
+            }                                                 \
+            else                                              \
+            { /* find the item; */                            \
+                ret = &(item->data);                          \
+            }                                                 \
+        }                                                     \
+        return ret;                                           \
     }
 
 /**
@@ -546,7 +546,7 @@ void *memset(void *des, int v, u64 size);
             return;                                                                               \
         }                                                                                         \
         __SET_showSET_##TName##_node_t(root->left, toString);                                     \
-        toString(&root->data);                                                                    \
+        toString((const T *)&root->data);                                                         \
         __SET_showSET_##TName##_node_t(root->right, toString);                                    \
     }                                                                                             \
     /*! @brief 递归中序遍历 显示所有元素 */                                           \
@@ -616,7 +616,7 @@ void *memset(void *des, int v, u64 size);
         ret = (*__SET_findMaxSET_##TName(set));                               \
         set->root = __SET_removeSET_##TName##_node_t(set->root, set->compare, \
                                                      set->deleteSub,          \
-                                                     &ret,                    \
+                                                     (const T *)&ret,         \
                                                      &set->size);             \
         return ret;                                                           \
     }
@@ -642,7 +642,7 @@ void *memset(void *des, int v, u64 size);
         ret = (*__SET_findMinSET_##TName(set));                               \
         set->root = __SET_removeSET_##TName##_node_t(set->root, set->compare, \
                                                      set->deleteSub,          \
-                                                     &ret,                    \
+                                                     (const T *)&ret,         \
                                                      &set->size);             \
         return ret;                                                           \
     }
@@ -707,7 +707,7 @@ void *memset(void *des, int v, u64 size);
     extern u8 __SET_insertSET_##TName(SET_##TName *set, const T ele);                                     \
     extern SET_##TName##_node_t *__SET_removeSET_##TName##_node_t(SET_##TName##_node_t *root,             \
                                                                   u8 (*compare)(const T *a, const T *b),  \
-                                                                  void (*deleteSub)(const T *ele),        \
+                                                                  void (*deleteSub)(T * ele),             \
                                                                   const T *value, u32 *size);             \
     extern u8 __SET_removeSET_##TName(SET_##TName *set, const T ele);                                     \
     extern u32 __SET_getSizeSET_##TName(SET_##TName *set);                                                \
