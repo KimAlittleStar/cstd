@@ -176,7 +176,7 @@ void *memset(void *des, int v, u64 size);
     /*! @brief 此函数是会声明在外部的delete函数,调用上述  @see __SET_deleteSET_##TName##_node_t 函数*/ \
     void SET_deleteSET_##TName(SET_##TName *set)                                                                          \
     {                                                                                                                     \
-        if (set != NULL)                                                                                                  \
+        if (set == NULL)                                                                                                  \
             return;                                                                                                       \
         __SET_deleteSET_##TName##_node_t(set->deleteSub, set->root);                                                      \
         free(set);                                                                                                        \
@@ -480,7 +480,6 @@ void *memset(void *des, int v, u64 size);
         *(array + (*lengh)) = &root->data;                                                                            \
         (*lengh)++;                                                                                                   \
         __SET_itemDataSET_##TName##_node_t(root->right, array, lengh);                                                \
-        printf("5lengh = %d\n", *lengh);                                                                              \
     }                                                                                                                 \
     /*! @brief 与 @see SET_toDataSET_##TName ,但此次返回的是元素指针数组 即全部都是真实引用 */ \
     /*! @brief 所有对此数组元素的操作都会真实的反映到SET中的元素中 */                         \
