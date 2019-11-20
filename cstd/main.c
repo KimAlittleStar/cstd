@@ -4,15 +4,15 @@
 #include <sys/time.h>
 typedef char template_t;
 
-V_Define(template_t, DOU_t)
-    //
-    V_Declare_Vector(template_t, DOU_t)
+V_Define(template_t, DOU_t);
+//
+V_Declare_Vector(template_t, DOU_t);
 
-        V_Define(template_t, uint_t)
-    //
-    V_Declare_Vector(template_t, uint_t)
+V_Define(template_t, uint_t);
+//
+V_Declare_Vector(template_t, uint_t);
 
-        void heapSort(VCT_uint_t *v);
+void heapSort(VCT_uint_t *v);
 void heapSortInt(VCT_DOU_t *v);
 void replace_demo(VCT_uint_t *v, template_t *des, u32 len_d, template_t *src, u32 len_s);
 int main_testForSort(void);

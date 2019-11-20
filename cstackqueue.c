@@ -4,20 +4,20 @@ typedef struct
     char *name;
 } Customer;
 
-extern void tostring(const Customer* c);
-void freecustomer(Customer* c);
-SQ_Define(Customer,Customer);
+extern void tostring(const Customer *c);
+void freecustomer(Customer *c);
+SQ_Define(Customer, Customer);
 
-SQ_Declare(Customer,Customer,tostring,freecustomer)
+SQ_Declare(Customer, Customer, tostring, freecustomer);
 
-void tostring(const Customer *c)
+    void tostring(const Customer *c)
 {
-    printf("customer name = %s \n",c->name);
+    printf("customer name = %s \n", c->name);
 }
 
-void freecustomer(Customer* c)
+void freecustomer(Customer *c)
 {
-    if(c != NULL)
+    if (c != NULL)
         free(c->name);
 }
 
@@ -28,33 +28,33 @@ void toStringPoint(const Point_t *p)
 
 void cstackqueue_test(void)
 {
-
-    SQ_Customer* cus = SQ_newSQ_Customer();
-    char* nametab[] = {"bob","tom","kim","foolDog","stupid","zhazha"};
+#if 0
+    SQ_Customer *cus = SQ_newSQ_Customer();
+    char *nametab[] = {"bob", "tom", "kim", "foolDog", "stupid", "zhazha"};
     Customer c;
-    for(size_t i = 0;i<(sizeof (nametab)/sizeof (nametab[0]));i++)
+    for (size_t i = 0; i < (sizeof(nametab) / sizeof(nametab[0])); i++)
     {
         c.name = malloc(20);
-        strcpy(c.name,nametab[i]);
-        cus->enqueue(cus,c);
+        strcpy(c.name, nametab[i]);
+        cus->enqueue(cus, c);
     }
     cus->show(cus);
 
-    printf("the top name :%s\n",cus->top(cus).name);
-    printf("the button name :%s\n",cus->button(cus).name);
+    printf("the top name :%s\n", cus->top(cus).name);
+    printf("the button name :%s\n", cus->button(cus).name);
     cus->pop(cus);
 
-    printf("the top name :%s\n",cus->top(cus).name);
-    printf("the button name :%s\n",cus->button(cus).name);
+    printf("the top name :%s\n", cus->top(cus).name);
+    printf("the button name :%s\n", cus->button(cus).name);
     cus->dequeue(cus);
 
-    printf("the top name :%s\n",cus->top(cus).name);
-    printf("the button name :%s\n",cus->button(cus).name);
+    printf("the top name :%s\n", cus->top(cus).name);
+    printf("the button name :%s\n", cus->button(cus).name);
     cus->pop(cus);
 
     SQ_deleteSQ_Customer(cus);
-
-#if 0
+#endif
+#if 1
     SQ_Classt *stack = SQ_newSQ_Classt();
     Point_t pox;
     pox.x = 1;
@@ -76,6 +76,21 @@ void cstackqueue_test(void)
         stack->dequeue(stack);
         printf("\nstack size = %d\n", stack->getSize(stack));
     }
+    for (u16 i = 0; i < 20; i++)
+    {
+        pox.x = 6 * i;
+        pox.y = 7 * i;
+        stack->enqueue(stack, pox);
+    }
+    Point_t buff[16];
+    for(u16 i = 0;i< 16;i++)
+    {
+        buff[i].x = i*3+9;
+        buff[i].y = i*9+3;
+    }
+
+    SQ_pushArraySQ_Classt(stack,buff,16);
+
     pox.x = 255;
     pox.y = 255;
     stack->enqueue(stack, pox);
@@ -83,6 +98,8 @@ void cstackqueue_test(void)
     pox.x = 128;
     pox.y = 128;
     stack->enqueue(stack, pox);
+
+    stack->show(stack);
 
     pox.x = 0;
     pox.y = 0;
@@ -133,8 +150,8 @@ SQ_Classt *SQ_newSQ_Classt(void)
 
 void SQ_deleteSQ_Classt(SQ_Classt *t)
 {
-    if(t == NULL)
-        return ;
+    if (t == NULL)
+        return;
     if ((t->top_index != t->button_index) && t->deleteSub != NULL)
     {
         for (u32 i = t->button_index; i < t->top_index; i++)
@@ -164,7 +181,7 @@ u8 SQ_resizeSQ_Classt(SQ_Classt *t, u32 newsize)
         if (t->top_index > t->realSize)
         {
             memcpy(tempdata, t->data + t->button_index, sizeof(Classt) * ((t->realSize) - (t->button_index)));
-            memcpy(tempdata + (t->realSize) - (t->button_index), t->data, t->top_index % t->realSize);
+            memcpy(tempdata + (t->realSize) - (t->button_index), t->data, sizeof(Classt) *(t->top_index % t->realSize));
         }
         else
         {
@@ -207,6 +224,21 @@ u8 SQ_pushSQ_Classt(struct __SQ_Classt *t, const Classt e)
 {
     return t->enqueue(t, e);
 }
+u8 SQ_pushArraySQ_Classt(struct __SQ_Classt *t, Classt *array, u32 lengh)
+{
+    if (t == NULL)
+        return FALSE;
+    if ((t->top_index - t->button_index + lengh) >= t->realSize)
+        if (t->resize(t, (t->realSize) * 3 / 2 + lengh) == FALSE)
+            return FALSE;
+    for (u32 i = 0; i < lengh; i++)
+    {
+        t->data[t->top_index % t->realSize] = array[i];
+        t->top_index++;
+    }
+    return TRUE;
+}
+
 u8 SQ_enqueueSQ_Classt(struct __SQ_Classt *t, const Classt e)
 {
     if (t == NULL)
