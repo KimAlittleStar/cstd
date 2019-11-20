@@ -453,40 +453,39 @@ void *memset(void *des, int v, u64 size);
 ///< 此宏定义使用在头文件,一定要和 V_Declare_Vector 成对使用,一个在头文件一个在.c文件
 ///< 且传值要一模一样
 
-#define V_Define(T, TypeName)                                \
-    V_TYPEDEF(T, TypeName)                                   \
-    extern VCT_##TypeName *VCT_newVCT_##TypeName(void);      \
-    extern void VCT_deleteVCT_##TypeName(VCT_##TypeName *v); \
-    //
+#define V_Define(T, TypeName)                           \
+    V_TYPEDEF(T, TypeName)                              \
+    extern VCT_##TypeName *VCT_newVCT_##TypeName(void); \
+    extern void VCT_deleteVCT_##TypeName(VCT_##TypeName *v)
 
-#define V_Declare_Vector(T, TypeName)                                                          \
-    u8 __VCT_resizeVCT_##TypeName(VCT_##TypeName *v, u32 newsize);                             \
-    u32 __VCT_sizeVCT_##TypeName(VCT_##TypeName *v);                                           \
-    T *__VCT_atVCT_##TypeName(VCT_##TypeName *v, u32 index);                                   \
-    u8 __VCT_appendVCT_##TypeName(VCT_##TypeName *v, const T d);                               \
-    void __VCT_clearVCT_##TypeName(VCT_##TypeName *v);                                         \
-    void __VCT_removelastVCT_##TypeName(VCT_##TypeName *v);                                    \
-    void __VCT_removeVCT_##TypeName(VCT_##TypeName *v, u32 starX, u32 lengh);                  \
-    void __VCT_insertVCT_##TypeName(VCT_##TypeName *v, u32 index, const T value);              \
-    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v);                                          \
-    void __VCT_showVCT_##TypeName(VCT_##TypeName *v);                                          \
-    void __VCT_replaceVCT_##TypeName(VCT_##TypeName *v, T *des, u32 len_d, T *src, u32 len_s); \
-    V_NEW(TypeName, NULL, NULL, NULL)                                                          \
-    V_DELETE(TypeName)                                                                         \
-    V_RESIZE(T, TypeName)                                                                      \
-    V_SIZE(TypeName)                                                                           \
-    V_AT(T, TypeName)                                                                          \
-    V_APPEND(T, TypeName)                                                                      \
-    V_CLEAR(TypeName)                                                                          \
-    V_REMOVELAST(TypeName)                                                                     \
-    V_REMOVE(TypeName)                                                                         \
-    V_INSERT(T, TypeName)                                                                      \
-    V_SORT(T, TypeName)                                                                        \
-    V_SHOW(TypeName)                                                                           \
-    V_REPLACE(T, TypeName)
+#define V_Declare_Vector(T, TypeName)                                             \
+    u8 __VCT_resizeVCT_##TypeName(VCT_##TypeName *v, u32 newsize);                \
+    u32 __VCT_sizeVCT_##TypeName(VCT_##TypeName *v);                              \
+    T *__VCT_atVCT_##TypeName(VCT_##TypeName *v, u32 index);                      \
+    u8 __VCT_appendVCT_##TypeName(VCT_##TypeName *v, const T d);                  \
+    void __VCT_clearVCT_##TypeName(VCT_##TypeName *v);                            \
+    void __VCT_removelastVCT_##TypeName(VCT_##TypeName *v);                       \
+    void __VCT_removeVCT_##TypeName(VCT_##TypeName *v, u32 starX, u32 lengh);     \
+    void __VCT_insertVCT_##TypeName(VCT_##TypeName *v, u32 index, const T value); \
+    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v);                             \
+    void __VCT_showVCT_##TypeName(VCT_##TypeName *v);                             \
+    V_DELETE(TypeName)                                                            \
+    V_RESIZE(T, TypeName)                                                         \
+    V_SIZE(TypeName)                                                              \
+    V_AT(T, TypeName)                                                             \
+    V_APPEND(T, TypeName)                                                         \
+    V_CLEAR(TypeName)                                                             \
+    V_REMOVELAST(TypeName)                                                        \
+    V_REMOVE(TypeName)                                                            \
+    V_INSERT(T, TypeName)                                                         \
+    V_SORT(T, TypeName)                                                           \
+    V_SHOW(TypeName)                                                              \
+    V_REPLACE(T, TypeName)                                                        \
+    V_NEW(TypeName, NULL, NULL, NULL)                                             \
+    void __VCT_replaceVCT_##TypeName(VCT_##TypeName *v, T *des, u32 len_d, T *src, u32 len_s)
 
 //
 
-V_Define(int, int_t)
+V_Define(int, int_t);
 
 #endif // CVECTOR_H
