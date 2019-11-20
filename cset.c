@@ -93,11 +93,11 @@ void toString_temp(const typeClass *a)
 {
     VPRINTF("%d \n", *a);
 }
-SET_Define(u32, u16_t)
-    /**/
-    SET_Declare_Set(u32, u16_t, compare_temp, NULL, toString_temp)
+SET_Define(u32, u16_t);
+/**/
+SET_Declare_Set(u32, u16_t, compare_temp, NULL, toString_temp);
 
-    /**
+/**
  ***********************************************************************
  * @brief 此函数是一个实力demo函数，这个函数是笔者作为测试函数的一个入口函数
  * @param param1                 Explanation_theParam
@@ -108,7 +108,7 @@ SET_Define(u32, u16_t)
  * @note AllCopyRight by XXX CO ,. LTD
  **********************************************************************
  */
-    void cset_test_demo(void)
+void cset_test_demo(void)
 {
     SET_typeClass_t *test = SET_newtypeClass_t();
     test->compare = compare_temp;

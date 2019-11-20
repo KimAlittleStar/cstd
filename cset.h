@@ -176,7 +176,7 @@ void *memset(void *des, int v, u64 size);
     /*! @brief 此函数是会声明在外部的delete函数,调用上述  @see __SET_deleteSET_##TName##_node_t 函数*/ \
     void SET_deleteSET_##TName(SET_##TName *set)                                                                          \
     {                                                                                                                     \
-        if (set != NULL)                                                                                                  \
+        if (set == NULL)                                                                                                  \
             return;                                                                                                       \
         __SET_deleteSET_##TName##_node_t(set->deleteSub, set->root);                                                      \
         free(set);                                                                                                        \
@@ -680,7 +680,7 @@ void *memset(void *des, int v, u64 size);
 #define SET_Define(T, TName)                      \
     S_TYPEDEF(T, TName)                           \
     extern SET_##TName *SET_newSET_##TName(void); \
-    extern void SET_deleteSET_##TName(SET_##TName *set);
+    extern void SET_deleteSET_##TName(SET_##TName *set)
 
 /**
  ***********************************************************************
@@ -722,8 +722,6 @@ void *memset(void *des, int v, u64 size);
     extern T *__SET_findMinSET_##TName(SET_##TName *set);                                                 \
     extern T __SET_removeMaxSET_##TName(SET_##TName *set);                                                \
     extern T __SET_removeMinSET_##TName(SET_##TName *set);                                                \
-    void __SET_clearSET_##TName(SET_##TName *set);                                                        \
-    S_NEW(T, TName, Compare, ToString, DeleteSub)                                                         \
     S_DELETE(T, TName)                                                                                    \
     S_INSERT(T, TName)                                                                                    \
     S_REMOVE(T, TName)                                                                                    \
@@ -736,7 +734,9 @@ void *memset(void *des, int v, u64 size);
     S_FINDMIN(T, TName)                                                                                   \
     S_REMOVEMAX(T, TName)                                                                                 \
     S_REMOVEMIN(T, TName)                                                                                 \
-    S_CLEAR(T, TName)
+    S_CLEAR(T, TName)                                                                                     \
+    S_NEW(T, TName, Compare, ToString, DeleteSub)                                                         \
+    void __SET_clearSET_##TName(SET_##TName *set)
 
 //-----------------------------------------------//
 
