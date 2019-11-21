@@ -119,17 +119,18 @@ void *memset(void *des, int v, u64 size);
 /*
  *  delete函数,清理相关结构体使用的堆内存空间
 */
-#define V_DELETE(TypeName)                                        \
-    void VCT_deleteVCT_##TypeName(VCT_##TypeName *v)              \
-    {                                                             \
-        if (v == NULL)                                            \
-            return;                                               \
-        if (v->data == NULL)                                      \
-            return;                                               \
-        for (u32 i = 0; i < v->size && v->deleteSub != NULL; i++) \
-            v->deleteSub(v->data[i]);                             \
-        free(v->data);                                            \
-        free(v);                                                  \
+#define V_DELETE(TypeName)                                            \
+    void VCT_deleteVCT_##TypeName(VCT_##TypeName *v)                  \
+    {                                                                 \
+        if (v == NULL)                                                \
+            return;                                                   \
+        if (v->data != NULL)                                          \
+        {                                                             \
+            for (u32 i = 0; i < v->size && v->deleteSub != NULL; i++) \
+                v->deleteSub(v->data[i]);                             \
+            free(v->data);                                            \
+        }                                                             \
+        free(v);                                                      \
     }
 
 /*
@@ -145,7 +146,8 @@ void *memset(void *des, int v, u64 size);
                 return FALSE;                                                  \
             memcpy(temp, v->data, sizeof(*v->data) * v->size);                 \
             memset(temp + v->size, 0, sizeof(*v->data) * (newsize - v->size)); \
-            free(v->data);                                                     \
+            if (v->data != NULL)                                               \
+                free(v->data);                                                 \
             v->data = temp;                                                    \
             v->realsize = newsize;                                             \
             return TRUE;                                                       \

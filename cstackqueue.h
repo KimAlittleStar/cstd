@@ -103,20 +103,21 @@ void *memset(void *des, int v, u64 size);
         return ret;                                     \
     }
 
-#define _SQ_DELETE(T, TName)                                           \
-    void SQ_deleteSQ_##TName(SQ_##TName *t)                            \
-    {                                                                  \
-        if (t == NULL)                                                 \
-            return;                                                    \
-        if ((t->top_index != t->button_index) && t->deleteSub != NULL) \
-        {                                                              \
-            for (u32 i = t->button_index; i < t->top_index; i++)       \
-            {                                                          \
-                t->deleteSub(t->data + i);                             \
-            }                                                          \
-        }                                                              \
-        free(t->data);                                                 \
-        free(t);                                                       \
+#define _SQ_DELETE(T, TName)                                                              \
+    void SQ_deleteSQ_##TName(SQ_##TName *t)                                               \
+    {                                                                                     \
+        if (t == NULL)                                                                    \
+            return;                                                                       \
+        if (t->data != NULL && (t->top_index != t->button_index) && t->deleteSub != NULL) \
+        {                                                                                 \
+            for (u32 i = t->button_index; i < t->top_index; i++)                          \
+            {                                                                             \
+                t->deleteSub(t->data + i);                                                \
+            }                                                                             \
+        }                                                                                 \
+        if (t->data != NULL)                                                              \
+            free(t->data);                                                                \
+        free(t);                                                                          \
     }
 
 #define _SQ_GETSIZE(T, TName)                             \
@@ -151,7 +152,8 @@ void *memset(void *des, int v, u64 size);
             t->button_index = 0;                                                                                         \
         }                                                                                                                \
         memset(tempdata + t->top_index, 0, (newsize - t->top_index) * sizeof(T));                                        \
-        free(t->data);                                                                                                   \
+        if (t->data != NULL)                                                                                             \
+            free(t->data);                                                                                               \
         t->data = tempdata;                                                                                              \
         t->realSize = newsize;                                                                                           \
         return TRUE;                                                                                                     \
@@ -213,7 +215,11 @@ void *memset(void *des, int v, u64 size);
         if (t->deleteSub != NULL)                           \
             t->deleteSub(&t->data[t->button_index]);        \
         t->button_index++;                                  \
-        t->button_index %= (t->realSize);                   \
+        if (t->button_index == t->realSize)                 \
+        {                                                   \
+            t->button_index = 0;                            \
+            t->top_index -= t->realSize;                    \
+        }                                                   \
         return TRUE;                                        \
     }
 
@@ -254,7 +260,7 @@ void *memset(void *des, int v, u64 size);
                 return FALSE;                                                           \
         for (u32 i = 0; i < lengh; i++)                                                 \
         {                                                                               \
-            t->data[t->top_index % t->realSize] = e[i];                                \
+            t->data[t->top_index % t->realSize] = e[i];                                 \
             t->top_index++;                                                             \
         }                                                                               \
         return TRUE;                                                                    \
