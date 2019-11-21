@@ -1,23 +1,24 @@
 #include "cstackqueue.h"
+#include "memwatch.h"
 typedef struct
 {
     char *name;
 } Customer;
 
-extern void tostring(const Customer* c);
-void freecustomer(Customer* c);
-SQ_Define(Customer,Customer);
+extern void tostring(const Customer *c);
+void freecustomer(Customer *c);
+SQ_Define(Customer, Customer);
 
-SQ_Declare(Customer,Customer,tostring,freecustomer)
+SQ_Declare(Customer, Customer, tostring, freecustomer);
 
 void tostring(const Customer *c)
 {
-    printf("customer name = %s \n",c->name);
+    printf("customer name = %s \n", c->name);
 }
 
-void freecustomer(Customer* c)
+void freecustomer(Customer *c)
 {
-    if(c != NULL)
+    if (c != NULL)
         free(c->name);
 }
 
@@ -28,33 +29,33 @@ void toStringPoint(const Point_t *p)
 
 void cstackqueue_test(void)
 {
-
-    SQ_Customer* cus = SQ_newSQ_Customer();
-    char* nametab[] = {"bob","tom","kim","foolDog","stupid","zhazha"};
+#if 0
+    SQ_Customer *cus = SQ_newSQ_Customer();
+    char *nametab[] = {"bob", "tom", "kim", "foolDog", "stupid", "zhazha"};
     Customer c;
-    for(size_t i = 0;i<(sizeof (nametab)/sizeof (nametab[0]));i++)
+    for (size_t i = 0; i < (sizeof(nametab) / sizeof(nametab[0])); i++)
     {
         c.name = malloc(20);
-        strcpy(c.name,nametab[i]);
-        cus->enqueue(cus,c);
+        strcpy(c.name, nametab[i]);
+        cus->enqueue(cus, c);
     }
     cus->show(cus);
 
-    printf("the top name :%s\n",cus->top(cus).name);
-    printf("the button name :%s\n",cus->button(cus).name);
+    printf("the top name :%s\n", cus->top(cus).name);
+    printf("the button name :%s\n", cus->button(cus).name);
     cus->pop(cus);
 
-    printf("the top name :%s\n",cus->top(cus).name);
-    printf("the button name :%s\n",cus->button(cus).name);
+    printf("the top name :%s\n", cus->top(cus).name);
+    printf("the button name :%s\n", cus->button(cus).name);
     cus->dequeue(cus);
 
-    printf("the top name :%s\n",cus->top(cus).name);
-    printf("the button name :%s\n",cus->button(cus).name);
+    printf("the top name :%s\n", cus->top(cus).name);
+    printf("the button name :%s\n", cus->button(cus).name);
     cus->pop(cus);
 
     SQ_deleteSQ_Customer(cus);
-
-#if 0
+#endif
+#if 1
     SQ_Classt *stack = SQ_newSQ_Classt();
     Point_t pox;
     pox.x = 1;
@@ -133,8 +134,8 @@ SQ_Classt *SQ_newSQ_Classt(void)
 
 void SQ_deleteSQ_Classt(SQ_Classt *t)
 {
-    if(t == NULL)
-        return ;
+    if (t == NULL)
+        return;
     if ((t->top_index != t->button_index) && t->deleteSub != NULL)
     {
         for (u32 i = t->button_index; i < t->top_index; i++)
@@ -174,7 +175,8 @@ u8 SQ_resizeSQ_Classt(SQ_Classt *t, u32 newsize)
         t->button_index = 0;
     }
     memset(tempdata + t->top_index, 0, (newsize - t->top_index) * sizeof(Classt));
-    free(t->data);
+    if (t->data != NULL)
+        free(t->data);
     t->data = tempdata;
     t->realSize = newsize;
     return TRUE;
