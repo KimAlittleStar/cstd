@@ -192,7 +192,7 @@ void *memset(void *des, int v, u64 size);
             if (v->size >= v->realsize)                                 \
                 if (v->reSize(v, v->realsize * 2 + 1) == FALSE)         \
                     return FALSE;                                       \
-            v->data[v->size] = d;                                       \
+            v->data[v->size] = (XX)d;                                   \
             v->size++;                                                  \
             return TRUE;                                                \
         }                                                               \
@@ -328,53 +328,53 @@ void *memset(void *des, int v, u64 size);
 
 #else
 #ifdef __VCT_SORTTYPE_QUICK
-#define V_SORT(T, TypeName)                                        \
-    void __VCT_subquick_##TypeName(VCT_##TypeName *v, T *a, u32 n) \
-    {                                                              \
-        unsigned int i, j;                                         \
-        u32 index = (u32)rand() % n;                               \
-        T pivot = a[0];                                            \
-        a[0] = a[index];                                           \
-        a[index] = pivot;                                          \
-        pivot = a[0];                                              \
-        i = 0;                                                     \
-        j = n - 1;                                                 \
-        while (i < j)                                              \
-        {                                                          \
-            while (i < j && v->compare(&pivot, a + j))             \
-            {                                                      \
-                j--;                                               \
-            }                                                      \
-            if (i < j)                                             \
-            {                                                      \
-                a[i] = a[j];                                       \
-                i++;                                               \
-            }                                                      \
-            while (i < j && v->compare(a + i, &pivot))             \
-            {                                                      \
-                i++;                                               \
-            }                                                      \
-            if (i < j)                                             \
-            {                                                      \
-                a[j] = a[i];                                       \
-                j--;                                               \
-            }                                                      \
-        }                                                          \
-        a[i] = pivot;                                              \
-        if (i > 1)                                                 \
-        {                                                          \
-            __VCT_subquick_##TypeName(v, a, i);                    \
-        }                                                          \
-        if (n - i - 1 > 1)                                         \
-        {                                                          \
-            __VCT_subquick_##TypeName(v, a + i + 1, n - i - 1);    \
-        }                                                          \
-    }                                                              \
-    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v)               \
-    {                                                              \
-        if (v == NULL || v->compare == NULL)                       \
-            return;                                                \
-        __VCT_subquick_##TypeName(v, v->data, v->size);            \
+#define V_SORT(T, TypeName)                                                    \
+    void __VCT_subquick_##TypeName(VCT_##TypeName *v, T *a, u32 n)             \
+    {                                                                          \
+        unsigned int i, j;                                                     \
+        u32 index = (u32)rand() % n;                                           \
+        T pivot = a[0];                                                        \
+        a[0] = a[index];                                                       \
+        a[index] = pivot;                                                      \
+        pivot = a[0];                                                          \
+        i = 0;                                                                 \
+        j = n - 1;                                                             \
+        while (i < j)                                                          \
+        {                                                                      \
+            while (i < j && v->compare((const T *)&pivot, (const T *)(a + j))) \
+            {                                                                  \
+                j--;                                                           \
+            }                                                                  \
+            if (i < j)                                                         \
+            {                                                                  \
+                a[i] = a[j];                                                   \
+                i++;                                                           \
+            }                                                                  \
+            while (i < j && v->compare((const T *)a + i, (const T *)&pivot))   \
+            {                                                                  \
+                i++;                                                           \
+            }                                                                  \
+            if (i < j)                                                         \
+            {                                                                  \
+                a[j] = a[i];                                                   \
+                j--;                                                           \
+            }                                                                  \
+        }                                                                      \
+        a[i] = pivot;                                                          \
+        if (i > 1)                                                             \
+        {                                                                      \
+            __VCT_subquick_##TypeName(v, a, i);                                \
+        }                                                                      \
+        if (n - i - 1 > 1)                                                     \
+        {                                                                      \
+            __VCT_subquick_##TypeName(v, a + i + 1, n - i - 1);                \
+        }                                                                      \
+    }                                                                          \
+    void __VCT_sortVCT_##TypeName(VCT_##TypeName *v)                           \
+    {                                                                          \
+        if (v == NULL || v->compare == NULL)                                   \
+            return;                                                            \
+        __VCT_subquick_##TypeName(v, v->data, v->size);                        \
     }
 
 #else
