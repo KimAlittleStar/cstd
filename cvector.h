@@ -45,7 +45,7 @@ typedef unsigned long long u64;
 #define TRUE !FALSE
 #endif
 
-#ifndef _INC_STDLIB
+#if !defined(_INC_STDLIB) && !defined(_STDLIB_H)
 
 extern void *memcpy(void *des, void *src, u64 size);
 extern void *malloc(u64 size);
@@ -54,7 +54,7 @@ extern int rand(void);
 
 #endif //如果没有include stdlib.h 文件 那么需要实现以上几个函数
 
-#ifndef _INC_STRING
+#if !defined(_INC_STRING) && !defined(_STRING_H)
 
 void *memset(void *des, int v, u64 size);
 
@@ -235,33 +235,33 @@ void *memset(void *des, int v, u64 size);
  * 真正的删除,其末尾一定会追加 一个全为 0 的数据字节
  * .
 */
-#define V_REMOVE(TypeName)                                                          \
-    inline void __VCT_removeVCT_##TypeName(VCT_##TypeName *v, u32 starX, u32 lengh) \
-    {                                                                               \
-        if (v != NULL)                                                              \
-        {                                                                           \
-            if (lengh == 0)                                                         \
-                return;                                                             \
-            else if (v->size > starX)                                               \
-            {                                                                       \
-                lengh = (v->size > (starX + lengh)) ? (lengh) : (v->size - starX);  \
-                for (u32 i = starX; i < v->size; i++)                               \
-                {                                                                   \
-                    if (i + lengh < v->size)                                        \
-                    {                                                               \
-                        if (v->deleteSub != NULL)                                   \
-                            v->deleteSub(v->data[i]);                               \
-                        memcpy(v->data + i, v->data + i + lengh, sizeof(*v->data)); \
-                    }                                                               \
-                    else                                                            \
-                    {                                                               \
-                        memset(v->data + i, 0, sizeof(*v->data));                   \
-                        break;                                                      \
-                    }                                                               \
-                }                                                                   \
-                v->size -= lengh;                                                   \
-            }                                                                       \
-        }                                                                           \
+#define V_REMOVE(TypeName)                                                            \
+    inline void __VCT_removeVCT_##TypeName(VCT_##TypeName *v, u32 starX, u32 lengh)   \
+    {                                                                                 \
+        if (v != NULL)                                                                \
+        {                                                                             \
+            if (lengh == 0)                                                           \
+                return;                                                               \
+            else if (v->size > starX)                                                 \
+            {                                                                         \
+                lengh = (v->size > (starX + lengh)) ? (lengh) : (v->size - starX);    \
+                for (u32 i = 0; i < lengh; i++)                                       \
+                {                                                                     \
+                    if (v->deleteSub != NULL)                                         \
+                        v->deleteSub(v->data[i + starX]);                             \
+                }                                                                     \
+                if (starX + lengh == v->size)                                         \
+                    memset(v->data + starX, 0, sizeof(*(v->data)) * lengh);           \
+                else                                                                  \
+                {                                                                     \
+                    memcpy(v->data + starX,                                           \
+                           v->data + starX + lengh,                                   \
+                           sizeof(*(v->data)) * (v->size - starX - lengh));           \
+                    memset(v->data + v->size - lengh, 0, sizeof(*(v->data)) * lengh); \
+                }                                                                     \
+                v->size -= lengh;                                                     \
+            }                                                                         \
+        }                                                                             \
     }
 
 /*

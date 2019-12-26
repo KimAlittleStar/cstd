@@ -32,7 +32,7 @@ typedef unsigned long long u64;
 #define TRUE !FALSE
 #endif
 
-#ifndef _INC_STDLIB
+#if !defined(_INC_STDLIB) && !defined(_STDLIB_H)
 
 extern void *memcpy(void *des, void *src, u64 size);
 extern void *malloc(u64 size);
@@ -41,7 +41,7 @@ extern int rand(void);
 
 #endif //如果没有include stdlib.h 文件 那么需要实现以上几个函数
 
-#ifndef _INC_STRING
+#if !defined(_INC_STRING) && !defined(_STRING_H)
 
 void *memset(void *des, int v, u64 size);
 
